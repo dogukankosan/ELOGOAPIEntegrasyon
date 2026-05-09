@@ -1,0 +1,291 @@
+﻿@model EBelgeUI.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActiveMenu"] = "Dashboard";
+}
+
+<style>
+    :root {
+        --primary: #1a73e8;
+        --success: #188038;
+        --danger: #c62828;
+        --warning: #e65100;
+        --border: #e0e0e0;
+        --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        --radius: 12px;
+    }
+
+    .dash-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+        .stat-card .icon {
+            font-size: 1.6rem;
+        }
+
+        .stat-card .val {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-card .lbl {
+            font-size: 0.78rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .stat-card .sub {
+            font-size: 0.71rem;
+            color: #999;
+        }
+
+        .stat-card.success {
+            border-top: 4px solid var(--success);
+        }
+
+        .stat-card.danger {
+            border-top: 4px solid var(--danger);
+        }
+
+        .stat-card.warning {
+            border-top: 4px solid var(--warning);
+        }
+
+        .stat-card.primary {
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card.gray {
+            border-top: 4px solid #888;
+        }
+
+    .dash-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .dash-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+        .dash-card .card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .transfer-item {
+        padding: 12px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.8rem;
+    }
+
+        .transfer-item:last-child {
+            border-bottom: none;
+        }
+
+    .fatura-no {
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 0.82rem;
+        color: var(--primary);
+    }
+
+    .tarih {
+        font-size: 0.72rem;
+        color: #888;
+    }
+
+    .hata-msg {
+        font-size: 0.72rem;
+        color: var(--danger);
+        background: #fff5f5;
+        border: 1px solid #ffcdd2;
+        border-radius: 6px;
+        padding: 4px 8px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .ref-no {
+        font-size: 0.72rem;
+        color: var(--success);
+        font-weight: 600;
+    }
+
+    .empty-state {
+        padding: 30px;
+        text-align: center;
+        color: #aaa;
+        font-size: 0.82rem;
+    }
+
+    @@media (max-width: 768px) {
+        .dash-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0 fw-bold" style="font-size:1.1rem;">📊 Dashboard</h4>
+    <a href="/Dashboard" class="btn btn-outline-primary btn-sm" style="font-size:0.78rem;">🔄 Yenile</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">⚠️ @Model.ErrorMessage</div>
+}
+
+@if (Model.Stats != null)
+{
+    var s = Model.Stats;
+    <!-- STAT KARTLARI -->
+    <div class="dash-grid">
+        <div class="stat-card success">
+            <div class="icon">✅</div>
+            <div class="val" style="color:var(--success)">@s.ToplamAktarilan</div>
+            <div class="lbl">Toplam Aktarılan</div>
+            <div class="sub">Bugün: @s.BugunkuAktarilan &nbsp;|&nbsp; 7 gün: @s.Son7GunAktarilan</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="icon">❌</div>
+            <div class="val" style="color:var(--danger)">@s.ToplamHatali</div>
+            <div class="lbl">Toplam Hatalı</div>
+            <div class="sub">Bugün: @s.BugunkuHatali &nbsp;|&nbsp; 7 gün: @s.Son7GunHatali</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="icon">⏳</div>
+            <div class="val" style="color:var(--warning)">@s.ToplamBekleyen</div>
+            <div class="lbl">Bekleyen</div>
+            <div class="sub">Aktarılmayı bekliyor</div>
+        </div>
+        <div class="stat-card gray">
+            <div class="icon">🚫</div>
+            <div class="val" style="color:#555">@s.KaraListeSayisi</div>
+            <div class="lbl">Kara Listede</div>
+            <div class="sub">Aktif cari filtresi</div>
+        </div>
+        <div class="stat-card primary">
+            <div class="icon">🏭</div>
+            <div class="val" style="color:var(--primary)">@s.AmbarSayisi</div>
+            <div class="lbl">Aktif Ambar</div>
+            <div class="sub">Tanımlı ambar sayısı</div>
+        </div>
+    </div>
+}
+
+<!-- SON TRANSFERLER -->
+<div class="dash-row">
+
+    <!-- Hatalı -->
+    <div class="dash-card">
+        <div class="card-header" style="color:var(--danger);">
+            ❌ Son Hatalı Transferler
+            @if (Model.SonHataliTransferler.Any())
+            {
+                <span style="background:#fce8e6;color:var(--danger);font-size:0.68rem;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:auto;">
+                    @Model.SonHataliTransferler.Count
+                </span>
+            }
+        </div>
+        <div>
+            @if (!Model.SonHataliTransferler.Any())
+            {
+                <div class="empty-state">🎉 Hatalı transfer yok!</div>
+            }
+            else
+            {
+                @foreach (var t in Model.SonHataliTransferler)
+                {
+                    <div class="transfer-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fatura-no">@t.FaturaNo</span>
+                            <span class="tarih">@((t.AktarimTarihi ?? t.CreatedAt)?.ToString("dd.MM.yyyy HH:mm"))</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(t.HataMesaji))
+                        {
+                            <span class="hata-msg">@SadeleHata(t.HataMesaji)</span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Başarılı -->
+    <div class="dash-card">
+        <div class="card-header" style="color:var(--success);">
+            ✅ Son Başarılı Transferler
+        </div>
+        <div>
+            @if (!Model.SonBasariliTransferler.Any())
+            {
+                <div class="empty-state">Henüz transfer yapılmadı.</div>
+            }
+            else
+            {
+                @foreach (var t in Model.SonBasariliTransferler)
+                {
+                    <div class="transfer-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fatura-no">@t.FaturaNo</span>
+                            <span class="tarih">@t.AktarimTarihi?.ToString("dd.MM.yyyy HH:mm")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span style="font-size:0.72rem;color:#555;">Logo: @(t.LogoFaturaNo ?? "-")</span>
+                            <span class="ref-no">Ref: @(t.LogoLogicalRef?.ToString() ?? "-")</span>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+</div>
+
+@functions {
+    string SadeleHata(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return "";
+        try
+        {
+            var clean = raw.Replace("Logo ERP hata: ", "").Trim();
+            var doc = System.Text.Json.JsonDocument.Parse(clean);
+            if (doc.RootElement.TryGetProperty("message", out var msgs) &&
+                msgs.GetArrayLength() > 0)
+            {
+                var msg = msgs[0].GetString() ?? raw;
+                var idx = msg.IndexOf("Hata Oluştu:");
+                if (idx >= 0) msg = msg[(idx + 12)..].Trim();
+                return msg.Split('\n')[0].Trim();
+            }
+        }
+        catch { }
+        return raw;
+    }
+}

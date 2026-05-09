@@ -1,0 +1,593 @@
+﻿@model EBelgeUI.Models.ApiLogIndexViewModel
+@{
+    ViewData["Title"] = "Hata Logları";
+    ViewData["ActiveMenu"] = "ApiLog";
+}
+
+<style>
+    .log-card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
+    .log-card .card-header { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px 12px 0 0; padding: 14px 20px; }
+    .badge-info { background: #e3f2fd; color: #1565c0; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .badge-error { background: #fce8e6; color: #c62828; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .badge-warn { background: #fff3e0; color: #e65100; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .badge-debug { background: #f3e5f5; color: #6a1b9a; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .badge-method-get { background: #e8f5e9; color: #2e7d32; font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: monospace; }
+    .badge-method-post { background: #e3f2fd; color: #1565c0; font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: monospace; }
+    .badge-method-delete { background: #fce8e6; color: #c62828; font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: monospace; }
+    .badge-method-put { background: #fff3e0; color: #e65100; font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: monospace; }
+    .status-ok { color: #2e7d32; font-weight: 700; font-family: monospace; font-size: 0.8rem; }
+    .status-err { color: #c62828; font-weight: 700; font-family: monospace; font-size: 0.8rem; }
+    .status-warn { color: #e65100; font-weight: 700; font-family: monospace; font-size: 0.8rem; }
+    table thead th { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #ccc; background: #1a1a2e; border-bottom: 2px solid #333; white-space: nowrap; padding: 10px 12px; }
+    table tbody td { font-size: 0.8rem; vertical-align: middle; padding: 7px 12px; border-bottom: 1px solid #f0f0f0; }
+    table tbody tr:hover td { background: #f8f9ff; }
+    table tbody tr.row-error td { background: #fff8f8; }
+    table tbody tr.row-warn td { background: #fffdf5; }
+    .path-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 0.75rem; color: #555; }
+    .msg-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.78rem; }
+    .duration-fast { color: #2e7d32; font-size: 0.75rem; }
+    .duration-slow { color: #e65100; font-size: 0.75rem; }
+    .duration-very-slow { color: #c62828; font-size: 0.75rem; font-weight: 700; }
+    .btn-action { width: 28px; height: 28px; border-radius: 6px; border: 1.5px solid; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; background: transparent; padding: 0; font-size: 0.75rem; }
+    .btn-del { border-color: #c62828; color: #c62828; } .btn-del:hover { background: #c62828; color: white; }
+    .btn-detail { border-color: #1a73e8; color: #1a73e8; } .btn-detail:hover { background: #1a73e8; color: white; }
+    .form-control, .form-select { border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 0.82rem; }
+    .form-control:focus, .form-select:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.12); }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .stat-box { background: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 14px; text-align: center; }
+    .stat-box .num { font-size: 1.4rem; font-weight: 800; }
+    .stat-box .lbl { font-size: 0.7rem; color: #888; }
+    .chip-bar { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { background: #f0f0f0; color: #555; border: 1px solid #ddd; border-radius: 20px; padding: 3px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+    .chip:hover, .chip.active { background: #1a73e8; color: white; border-color: #1a73e8; }
+    .chip.chip-err:hover, .chip.chip-err.active { background: #c62828; border-color: #c62828; color: white; }
+    .chip.chip-warn:hover, .chip.chip-warn.active { background: #e65100; border-color: #e65100; color: white; }
+    .chip.chip-ok:hover, .chip.chip-ok.active { background: #2e7d32; border-color: #2e7d32; color: white; }
+    .chip.chip-ui:hover, .chip.chip-ui.active { background: #6a1b9a; border-color: #6a1b9a; color: white; }
+    .chip.chip-api:hover, .chip.chip-api.active { background: #1565c0; border-color: #1565c0; color: white; }
+</style>
+
+<!-- STATS -->
+@if (Model.Logs.Any())
+{
+    var totalLog = Model.TotalCount;
+    var errorCount = Model.Logs.Count(l => l.Level?.ToUpper() == "ERROR");
+    var warnCount = Model.Logs.Count(l => l.Level?.ToUpper() is "WARNING" or "WARN");
+    var infoCount = Model.Logs.Count(l => l.Level?.ToUpper() == "INFO");
+    var avgDuration = Model.Logs.Any(l => l.Duration.HasValue)
+        ? (int)Model.Logs.Where(l => l.Duration.HasValue).Average(l => l.Duration!.Value) : 0;
+
+    <div class="stats-grid">
+      <div class="stat-box" style="border-color:#1a73e8;">
+    <div class="num" style="color:#1a73e8;" id="statTotal">@totalLog</div>
+    <div class="lbl">Toplam Log</div>
+</div>
+<div class="stat-box" style="border-color:#c62828;">
+    <div class="num" style="color:#c62828;" id="statError">@errorCount</div>
+    <div class="lbl">Hata</div>
+</div>
+<div class="stat-box" style="border-color:#e65100;">
+    <div class="num" style="color:#e65100;" id="statWarn">@warnCount</div>
+    <div class="lbl">Uyarı</div>
+</div>
+<div class="stat-box" style="border-color:#188038;">
+    <div class="num" style="color:#188038;" id="statInfo">@infoCount</div>
+    <div class="lbl">Info</div>
+</div>
+        <div class="stat-box" style="border-color:#888;">
+            <div class="num" style="color:#555;">@avgDuration<small style="font-size:0.7rem;">ms</small></div>
+            <div class="lbl">Ort. Süre</div>
+        </div>
+    </div>
+}
+
+<!-- FİLTRELER -->
+<div class="log-card mb-3">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 text-white d-flex align-items-center gap-2" style="font-size:0.9rem;font-weight:700;">
+            🔍 Filtreler
+        </h5>
+        <button class="btn btn-sm btn-outline-light py-0 px-2" type="button"
+                data-bs-toggle="collapse" data-bs-target="#filterCollapse" style="font-size:0.75rem;">▼</button>
+    </div>
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Index" asp-controller="ApiLog" id="filterForm">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Level</label>
+                        <select name="Level" class="form-select form-select-sm">
+                            <option value="">Tümü</option>
+                            @foreach (var l in new[] { "INFO", "ERROR", "WARNING", "DEBUG" })
+                            {
+                                <option value="@l" selected="@(Model.Filter.Level?.ToUpper() == l)">@l</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Source</label>
+                     <select name="Source" class="form-select form-select-sm">
+    <option value="">Tümü</option>
+    <option value="API" selected="@(Model.Filter.Source == "API")">API</option>
+    <option value="UI" selected="@(Model.Filter.Source == "UI")">UI</option>
+    @foreach (var s in Model.Sources.Where(x => x != "API" && x != "UI"))
+    {
+        <option value="@s" selected="@(Model.Filter.Source == s)">@s</option>
+    }
+</select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Kullanıcı</label>
+                        <select name="Username" class="form-select form-select-sm">
+                            <option value="">Tümü</option>
+                            @foreach (var u in Model.Usernames)
+                            {
+                                <option value="@u" selected="@(Model.Filter.Username == u)">@u</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Path</label>
+                        <input type="text" name="Path" class="form-control form-control-sm"
+                               value="@Model.Filter.Path" placeholder="/api/..." />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Status</label>
+                        <input type="number" name="StatusCode" class="form-control form-control-sm"
+                               value="@Model.Filter.StatusCode" placeholder="200" />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Başlangıç</label>
+                        <input type="date" name="BaslangicTarihi" class="form-control form-control-sm"
+                               value="@Model.Filter.BaslangicTarihi?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Bitiş</label>
+                        <input type="date" name="BitisTarihi" class="form-control form-control-sm"
+                               value="@Model.Filter.BitisTarihi?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;">Sayfa</label>
+                        <select name="PageSize" class="form-select form-select-sm">
+                            @foreach (var s in new[] { 50, 100, 200 })
+                            {
+                                <option value="@s" selected="@(Model.Filter.PageSize == s)">@s</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-2 flex-wrap align-items-center">
+                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.78rem;">
+                        🔍 Filtrele
+                    </button>
+                    <a href="@Url.Action("Index", "ApiLog")" class="btn btn-secondary btn-sm" style="font-size:0.78rem;">
+                        ↺ Temizle
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm" style="font-size:0.78rem;"
+                            onclick="exportExcel()">
+                        📊 Excel İndir
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm ms-auto"
+                            style="font-size:0.78rem;" onclick="deleteAll()">
+                        🗑 Tümünü Sil
+                    </button>
+                </div>
+
+                <!-- Hızlı chip filtreler -->
+                <div class="chip-bar mt-3">
+                    <span class="text-muted me-1" style="font-size:0.72rem;align-self:center;">Level:</span>
+                <span class="chip chip-err" onclick="quickFilter('level','ERROR')" id="chip-ERROR">❌ Hata</span>
+<span class="chip chip-warn" onclick="quickFilter('level','WARNING')" id="chip-WARNING">⚠ Uyarı</span>
+<span class="chip chip-ok" onclick="quickFilter('level','INFO')" id="chip-INFO">ℹ Info</span>
+<span class="chip active" onclick="quickFilter('level','')" id="chip-ALL">📋 Tümü</span>
+                    <span class="text-muted mx-1" style="font-size:0.72rem;align-self:center;">|</span>
+                    <span class="text-muted me-1" style="font-size:0.72rem;align-self:center;">Source:</span>
+                    <span class="chip chip-api" onclick="quickFilter('source','API')" id="chip-API">🔌 API</span>
+                    <span class="chip chip-ui" onclick="quickFilter('source','UI')" id="chip-UI">🖥 UI</span>
+                </div>
+
+                <input type="hidden" name="Page" value="1" />
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- LOG TABLO -->
+<div class="log-card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 text-white" style="font-size:0.9rem;font-weight:700;">📋 Log Kayıtları</h5>
+            <span id="logCountBadge" style="background:#333;color:#aaa;font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:700;">
+                @Model.TotalCount kayıt
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger m-3">⚠️ @Model.ErrorMessage</div>
+        }
+        else if (!Model.Logs.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <div style="font-size:2.5rem;">📋</div>
+                <p class="mt-2" style="font-size:.85rem;">Log kaydı bulunamadı.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Tarih</th>
+                            <th>Source</th>
+                            <th>Method</th>
+                            <th>Path</th>
+                            <th>Status</th>
+                            <th>Süre</th>
+                            <th>Kullanıcı</th>
+                            <th>Mesaj</th>
+                            <th class="text-center">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        @foreach (var log in Model.Logs)
+                        {
+                            var rowClass = log.Level?.ToUpper() == "ERROR" ? "row-error"
+                                : log.Level?.ToUpper() is "WARNING" or "WARN" ? "row-warn" : "";
+
+                            var badgeClass = log.Level?.ToUpper() switch
+                            {
+                                "ERROR" => "badge-error",
+                                "WARNING" or "WARN" => "badge-warn",
+                                "DEBUG" => "badge-debug",
+                                _ => "badge-info"
+                            };
+
+                            var mClass = log.Method?.ToUpper() switch
+                            {
+                                "GET" => "badge-method-get",
+                                "POST" => "badge-method-post",
+                                "DELETE" => "badge-method-delete",
+                                "PUT" => "badge-method-put",
+                                _ => "badge-info"
+                            };
+
+                            var sClass = (log.StatusCode ?? 0) < 300 ? "status-ok"
+                                : (log.StatusCode ?? 0) < 500 ? "status-warn" : "status-err";
+
+                            var dClass = (log.Duration ?? 0) < 500 ? "duration-fast"
+                                : (log.Duration ?? 0) < 2000 ? "duration-slow" : "duration-very-slow";
+
+                            <tr class="@rowClass"
+                                data-id="@log.Id"
+                                data-level="@log.Level?.ToUpper()"
+                                data-source="@log.Source?.ToUpper()">
+                                <td><span class="@badgeClass">@log.Level</span></td>
+                                <td>
+                                    <small style="font-family:monospace;font-size:0.73rem;color:#555;">
+                                        @log.CreatedAt.ToString("dd.MM.yy HH:mm:ss")
+                                    </small>
+                                </td>
+                                <td>
+                                    <small style="font-size:0.75rem;color:#666;font-weight:600;">
+                                        @log.Source
+                                    </small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(log.Method))
+                                    {
+                                        <span class="@mClass">@log.Method</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="path-cell" title="@log.Path">@log.Path</div>
+                                </td>
+                                <td>
+                                    @if (log.StatusCode.HasValue)
+                                    {
+                                        <span class="@sClass">@log.StatusCode</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (log.Duration.HasValue)
+                                    {
+                                        <span class="@dClass">@log.Duration ms</span>
+                                    }
+                                </td>
+                                <td><small style="font-size:0.75rem;">@log.Username</small></td>
+                                <td>
+                                    <div class="msg-cell" title="@log.Message">@log.Message</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center">
+                                        <button class="btn-action btn-detail"
+                                                title="Detay"
+                                                onclick="showDetail(@log.Id)"
+                                                type="button">
+                                            👁
+                                        </button>
+                                        <button class="btn-action btn-del"
+                                                title="Sil"
+                                                onclick="deleteLog(@log.Id)"
+                                                type="button">
+                                            🗑
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SAYFALAMA -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="d-flex justify-content-between align-items-center px-3 py-2"
+                     style="border-top:1px solid #f0f0f0;">
+                    <small class="text-muted">
+                        Sayfa @Model.Filter.Page / @Model.TotalPages (@Model.TotalCount kayıt)
+                    </small>
+                    <div class="d-flex gap-1">
+                        @if (Model.Filter.Page > 1)
+                        {
+                            <a href="@Url.Action("Index", "ApiLog", new {
+                                    Model.Filter.Level, Model.Filter.Source, Model.Filter.Username,
+                                    Model.Filter.Path, Model.Filter.StatusCode,
+                                    Model.Filter.BaslangicTarihi, Model.Filter.BitisTarihi,
+                                    Page = Model.Filter.Page - 1, Model.Filter.PageSize })"
+                               class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem;">
+                                ← Önceki
+                            </a>
+                        }
+                        @if (Model.Filter.Page < Model.TotalPages)
+                        {
+                            <a href="@Url.Action("Index", "ApiLog", new {
+                                    Model.Filter.Level, Model.Filter.Source, Model.Filter.Username,
+                                    Model.Filter.Path, Model.Filter.StatusCode,
+                                    Model.Filter.BaslangicTarihi, Model.Filter.BitisTarihi,
+                                    Page = Model.Filter.Page + 1, Model.Filter.PageSize })"
+                               class="btn btn-outline-primary btn-sm" style="font-size:0.75rem;">
+                                Sonraki →
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- DETAY MODAL -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden;">
+            <div class="modal-header" style="background:#1a1a2e;border:none;padding:1rem 1.5rem;">
+                <h5 class="modal-title text-white fw-bold" style="font-size:0.9rem;">📋 Log Detayı</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold" style="font-size:0.78rem;">Mesaj:</label>
+                    <div id="detailMessage" class="p-2"
+                         style="background:#f8f9fa;border-radius:8px;font-size:0.82rem;word-break:break-all;"></div>
+                </div>
+                <div id="detailWrapper">
+                    <label class="form-label fw-bold" style="font-size:0.78rem;">Detay / Stack Trace:</label>
+                    <pre id="detailContent"
+                         style="background:#1a1a2e;color:#a8ff78;padding:14px;border-radius:8px;
+                                font-size:0.73rem;max-height:450px;overflow-y:auto;
+                                white-space:pre-wrap;word-break:break-all;"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // ── LOG DATA (türkçe karakter için JSON serialize) ────
+    var logData = {
+        @foreach (var log in Model.Logs)
+        {
+            <text>
+            '@log.Id': {
+                msg: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(log.Message ?? "")),
+                detail: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(log.Detail ?? ""))
+            },
+            </text>
+        }
+    };
+
+    var activeLevel = '';
+    var activeSource = '';
+    var totalCount = @Model.TotalCount;
+
+    // ── DETAY MODAL ───────────────────────────────────────
+    function showDetail(id) {
+        var data = logData[id];
+        if (!data) return;
+
+        document.getElementById('detailMessage').textContent = data.msg || '-';
+
+        if (data.detail && data.detail.trim() !== '') {
+            document.getElementById('detailContent').textContent = data.detail;
+            document.getElementById('detailWrapper').style.display = 'block';
+        } else {
+            document.getElementById('detailWrapper').style.display = 'none';
+        }
+
+        new bootstrap.Modal(document.getElementById('detailModal')).show();
+    }
+
+    // ── TEK LOG SİL ───────────────────────────────────────
+ function deleteLog(id) {
+    Swal.fire({
+        title: 'Log Sil',
+        text: 'Bu log kaydı silinecek.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#c62828',
+        cancelButtonColor: '#757575',
+        confirmButtonText: '🗑 Sil',
+        cancelButtonText: 'İptal',
+        reverseButtons: true
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        fetch('/ApiLog/Delete/' + id, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                var row = document.querySelector('tr[data-id="' + id + '"]');
+                var rowLevel = '';
+
+                if (row) {
+                    rowLevel = (row.getAttribute('data-level') || '').toUpperCase();
+                    row.remove();
+                }
+
+                totalCount--;
+                delete logData[id];
+
+                // ── Badge güncelle ──
+                var badge = document.getElementById('logCountBadge');
+                if (badge) badge.textContent = totalCount + ' kayıt';
+
+                // ── Stats güncelle ──
+                var statTotal = document.getElementById('statTotal');
+                if (statTotal) statTotal.textContent = totalCount;
+
+                if (rowLevel === 'ERROR') {
+                    var el = document.getElementById('statError');
+                    if (el) el.textContent = Math.max(0, parseInt(el.textContent) - 1);
+                } else if (rowLevel === 'WARNING' || rowLevel === 'WARN') {
+                    var el = document.getElementById('statWarn');
+                    if (el) el.textContent = Math.max(0, parseInt(el.textContent) - 1);
+                } else if (rowLevel === 'INFO') {
+                    var el = document.getElementById('statInfo');
+                    if (el) el.textContent = Math.max(0, parseInt(el.textContent) - 1);
+                }
+
+                Swal.fire({ title: 'Silindi', icon: 'success', timer: 1000, showConfirmButton: false });
+            } else {
+                Swal.fire('Hata', data.message || 'Silinemedi.', 'error');
+            }
+        })
+        .catch(() => Swal.fire('Hata', 'Bağlantı hatası.', 'error'));
+    });
+}
+
+    // ── TÜMÜNÜ SİL ────────────────────────────────────────
+    function deleteAll() {
+        Swal.fire({
+            title: 'Tüm Logları Sil',
+            html: 'Mevcut filtreye göre <b>tüm loglar</b> silinecek.<br><small class="text-muted">Bu işlem geri alınamaz!</small>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#c62828',
+            cancelButtonColor: '#757575',
+            confirmButtonText: '🗑 Evet, Tümünü Sil',
+            cancelButtonText: 'İptal',
+            reverseButtons: true
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({ title: 'Siliniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            fetch('/ApiLog/DeleteAll', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({ title: 'Silindi', icon: 'success', timer: 1200, showConfirmButton: false })
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Hata', data.message || 'Silinemedi.', 'error');
+                }
+            })
+            .catch(() => Swal.fire('Hata', 'Bağlantı hatası.', 'error'));
+        });
+    }
+
+    // ── HIZLI FİLTRE ──────────────────────────────────────
+    function quickFilter(type, value) {
+        if (type === 'level') {
+            activeLevel = value;
+            ['ERROR', 'WARNING', 'INFO', 'DEBUG', 'ALL'].forEach(function(l) {
+                var el = document.getElementById('chip-' + l);
+                if (el) el.classList.remove('active');
+            });
+            document.getElementById(value ? 'chip-' + value : 'chip-ALL')?.classList.add('active');
+        } else if (type === 'source') {
+            // Toggle — tekrar tıklayınca kaldır
+            if (activeSource === value) {
+                activeSource = '';
+                document.getElementById('chip-' + value)?.classList.remove('active');
+            } else {
+                activeSource = value;
+                ['API', 'UI'].forEach(function(s) {
+                    var el = document.getElementById('chip-' + s);
+                    if (el) el.classList.remove('active');
+                });
+                document.getElementById('chip-' + value)?.classList.add('active');
+            }
+        }
+
+        applyFilters();
+    }
+
+   function applyFilters() {
+    var count = 0;
+
+    document.querySelectorAll('tr[data-id]').forEach(function(row) {
+        var rowLevel = (row.getAttribute('data-level') || '').toUpperCase().trim();
+        var rowSource = (row.getAttribute('data-source') || '').toUpperCase().trim();
+
+        var levelMatch = !activeLevel;
+        if (!levelMatch) {
+            var al = activeLevel.toUpperCase();
+            // WARNING için WARN da kabul et
+            if (al === 'WARNING') {
+                levelMatch = rowLevel === 'WARNING' || rowLevel === 'WARN';
+            } else {
+                levelMatch = rowLevel === al;
+            }
+        }
+
+        var sourceMatch = !activeSource || rowSource === activeSource.toUpperCase();
+        var visible = levelMatch && sourceMatch;
+        row.style.display = visible ? '' : 'none';
+        if (visible) count++;
+    });
+
+    updateBadge(count);
+}
+
+    function updateBadge(filteredCount) {
+        var badge = document.getElementById('logCountBadge');
+        if (!badge) return;
+
+        if (activeLevel || activeSource) {
+            badge.textContent = (filteredCount !== undefined ? filteredCount : totalCount) + ' kayıt (filtrelenmiş)';
+        } else {
+            badge.textContent = totalCount + ' kayıt';
+        }
+    }
+
+    // ── EXCEL EXPORT ──────────────────────────────────────
+    function exportExcel() {
+        var form = document.getElementById('filterForm');
+        var params = new URLSearchParams(new FormData(form));
+        params.set('PageSize', '10000');
+        window.location.href = '/ApiLog/Export?' + params.toString();
+    }
+</script>
+}

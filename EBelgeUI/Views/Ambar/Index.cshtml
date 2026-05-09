@@ -1,0 +1,385 @@
+﻿@model EBelgeUI.Models.AmbarIndexViewModel
+@{
+    ViewData["Title"] = "Ambar Yönetimi";
+    ViewData["ActiveMenu"] = "Ambar";
+}
+
+<style>
+    .ambar-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+        .ambar-card .card-header {
+            background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+            border-bottom: 1px solid #dde3ff;
+            border-radius: 12px 12px 0 0;
+            padding: 14px 20px;
+        }
+
+    .badge-aktif {
+        background: #e6f4ea;
+        color: #188038;
+        font-size: 0.72rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .badge-pasif {
+        background: #f5f5f5;
+        color: #888;
+        font-size: 0.72rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .btn-action {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        border: 1.5px solid;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all .15s;
+        background: transparent;
+        padding: 0;
+        font-size: 0.8rem;
+    }
+
+    .btn-edit {
+        border-color: #1a73e8;
+        color: #1a73e8;
+    }
+
+        .btn-edit:hover {
+            background: #1a73e8;
+            color: white;
+        }
+
+    .btn-delete {
+        border-color: #c62828;
+        color: #c62828;
+    }
+
+        .btn-delete:hover {
+            background: #c62828;
+            color: white;
+        }
+
+    .btn-toggle {
+        border-color: #888;
+        color: #888;
+    }
+
+        .btn-toggle:hover {
+            background: #888;
+            color: white;
+        }
+
+    .form-control, .form-select {
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.85rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+        }
+
+    table thead th {
+        font-size: 0.73rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        color: #555;
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    table tbody td {
+        font-size: 0.83rem;
+        vertical-align: middle;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- EKLEME FORMU -->
+        <div class="ambar-card mb-4">
+            <div class="card-header d-flex align-items-center gap-2">
+                <span>🏭</span>
+                <h5 class="mb-0" style="font-size:0.9rem;font-weight:700;" id="formTitle">Yeni Ambar Ekle</h5>
+            </div>
+            <div class="card-body p-3">
+                <input type="hidden" id="editId" value="0" />
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.78rem;font-weight:600;">Ambar Kodu <span class="text-danger">*</span></label>
+                    <input type="text" id="ambarKod" class="form-control form-control-sm"
+                           placeholder="Örn: 01.01.01" maxlength="50" />
+                    <div class="form-text" style="font-size:0.72rem;">Logo ERP ambar kodu</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.78rem;font-weight:600;">Ambar Adı <span class="text-danger">*</span></label>
+                    <input type="text" id="ambarAd" class="form-control form-control-sm"
+                           placeholder="Örn: Menemen Merkez" maxlength="200" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm flex-fill" onclick="saveAmbar()" style="font-size:0.82rem;">
+                        💾 Kaydet
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="cancelEdit()" id="cancelBtn"
+                            style="display:none;font-size:0.82rem;">
+                        ✕ İptal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BİLGİ KUTUSU -->
+        <div class="alert alert-info" style="font-size:0.78rem;border-radius:10px;">
+            <strong>ℹ️ Bilgi:</strong><br>
+            Faturalara bağlı ambarlar <strong>silinemez</strong> ve <strong>pasife alınamaz</strong>.<br>
+            Sadece ambar adı değiştirilebilir.
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- AMBAR LİSTESİ -->
+        <div class="ambar-card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <span>📋</span>
+                    <h5 class="mb-0" style="font-size:0.9rem;font-weight:700;">Ambar Listesi</h5>
+                    <span id="ambarCount" style="background:#e8f0fe;color:#1a73e8;font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:700;">
+                        @Model.Ambarlar.Count ambar
+                    </span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="filterAmbar('all')"
+                            style="font-size:0.75rem;" id="filterAll">
+                        Tümü
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="filterAmbar('aktif')"
+                            style="font-size:0.75rem;" id="filterAktif">
+                        Aktif
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="filterAmbar('pasif')"
+                            style="font-size:0.75rem;" id="filterPasif">
+                        Pasif
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger m-3">⚠️ @Model.ErrorMessage</div>
+                }
+                else if (!Model.Ambarlar.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <div style="font-size:2.5rem;">🏭</div>
+                        <p class="mt-2" style="font-size:.85rem;">Henüz ambar eklenmemiş.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-hover mb-0" id="ambarTable">
+                        <thead>
+                            <tr>
+                                <th>Kod</th>
+                                <th>Ad</th>
+                                <th>Durum</th>
+                                <th>Eklenme</th>
+                                <th class="text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Ambarlar)
+                            {
+                                <tr data-id="@a.Id" data-kod="@a.Kod" data-ad="@a.Ad"
+                                    data-aktif="@a.IsActive.ToString().ToLower()"
+                                    class="@(!a.IsActive ? "table-secondary" : "")">
+                                    <td>
+                                        <code style="font-size:0.8rem;background:#f0f4ff;padding:2px 8px;border-radius:4px;color:#1a73e8;">
+                                            @a.Kod
+                                        </code>
+                                    </td>
+                                    <td><strong>@a.Ad</strong></td>
+                                    <td>
+                                        @if (a.IsActive)
+                                        {
+                                            <span class="badge-aktif">✓ Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-pasif">✗ Pasif</span>
+                                        }
+                                    </td>
+                               
+                                    <td class="text-center">
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <button class="btn-action btn-edit" title="Düzenle"
+                                                    onclick="editAmbar(@a.Id, '@a.Kod', '@a.Ad')">
+                                                ✏
+                                            </button>
+                                            <button class="btn-action btn-toggle"
+                                                    title="@(a.IsActive ? "Pasife Al" : "Aktife Al")"
+                                                    onclick="toggleActive(@a.Id, @a.IsActive.ToString().ToLower())">
+                                                @(a.IsActive ? "⏸" : "▶")
+                                            </button>
+                                            <button class="btn-action btn-delete" title="Sil"
+                                                    onclick="deleteAmbar(@a.Id, '@a.Kod')">
+                                                🗑
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function saveAmbar() {
+            var id = parseInt(document.getElementById('editId').value);
+            var kod = document.getElementById('ambarKod').value.trim();
+            var ad = document.getElementById('ambarAd').value.trim();
+
+            if (!kod) { Swal.fire('Uyarı', 'Ambar kodu zorunludur.', 'warning'); return; }
+            if (!ad) { Swal.fire('Uyarı', 'Ambar adı zorunludur.', 'warning'); return; }
+
+            var url = id > 0 ? '/Ambar/Update/' + id : '/Ambar/Create';
+            var payload = { id: id, kod: kod, ad: ad, isActive: true };
+
+            Swal.fire({
+                title: id > 0 ? 'Güncelleniyor...' : 'Ekleniyor...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı',
+                        text: id > 0 ? 'Ambar güncellendi.' : 'Ambar eklendi.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire('Hata', data.message || 'İşlem başarısız.', 'error');
+                }
+            })
+            .catch(() => Swal.fire('Hata', 'Bağlantı hatası.', 'error'));
+        }
+
+        function editAmbar(id, kod, ad) {
+            document.getElementById('editId').value = id;
+            document.getElementById('ambarKod').value = kod;
+            document.getElementById('ambarAd').value = ad;
+            document.getElementById('formTitle').textContent = 'Ambar Düzenle';
+            document.getElementById('cancelBtn').style.display = 'inline-flex';
+            document.getElementById('ambarKod').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            document.getElementById('editId').value = 0;
+            document.getElementById('ambarKod').value = '';
+            document.getElementById('ambarAd').value = '';
+            document.getElementById('formTitle').textContent = 'Yeni Ambar Ekle';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        function deleteAmbar(id, kod) {
+            Swal.fire({
+                title: 'Ambar Sil',
+                html: '<b>' + kod + '</b> ambarını silmek istiyor musunuz?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c62828',
+                cancelButtonColor: '#757575',
+                confirmButtonText: '🗑 Evet, Sil',
+                cancelButtonText: 'İptal',
+                reverseButtons: true
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+
+                Swal.fire({ title: 'Siliniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                fetch('/Ambar/Delete/' + id, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({ title: 'Silindi', icon: 'success', timer: 1200, showConfirmButton: false })
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Hata', data.message || 'Silinemedi.', 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Hata', 'Bağlantı hatası.', 'error'));
+            });
+        }
+
+        function toggleActive(id, isActive) {
+            var yeniDurum = !isActive;
+            Swal.fire({
+                title: 'Durum Değiştir',
+                text: yeniDurum ? 'Ambar aktife alınacak.' : 'Ambar pasife alınacak.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1a73e8',
+                cancelButtonColor: '#757575',
+                confirmButtonText: 'Evet',
+                cancelButtonText: 'İptal',
+                reverseButtons: true
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+
+                Swal.fire({ title: 'Güncelleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                fetch('/Ambar/SetActive/' + id + '?isActive=' + yeniDurum, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({ title: 'Güncellendi', icon: 'success', timer: 1200, showConfirmButton: false })
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Hata', data.message || 'Güncellenemedi.', 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Hata', 'Bağlantı hatası.', 'error'));
+            });
+        }
+
+        function filterAmbar(type) {
+            document.querySelectorAll('tr[data-id]').forEach(function(row) {
+                var aktif = row.getAttribute('data-aktif') === 'true';
+                if (type === 'all') row.style.display = '';
+                else if (type === 'aktif') row.style.display = aktif ? '' : 'none';
+                else if (type === 'pasif') row.style.display = !aktif ? '' : 'none';
+            });
+            // Aktif butonu highlight et
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('filter-' + type)?.classList.add('active');
+        }
+    </script>
+}

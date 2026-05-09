@@ -1,0 +1,1344 @@
+﻿@model EBelgeUI.Models.SalesInvoiceIndexViewModel
+@{
+    ViewData["Title"] = "Satış Faturaları";
+    ViewData["ActiveMenu"] = "SalesInvoice";
+}
+
+<style>
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #0d47a1;
+        --success: #188038;
+        --success-light: #e6f4ea;
+        --danger: #c62828;
+        --danger-light: #fce8e6;
+        --warning: #e65100;
+        --warning-light: #fff3e0;
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-500: #888;
+        --border: #e0e0e0;
+        --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        --radius: 12px;
+    }
+
+    /* ── FILTRE KARTI ── */
+    .filter-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        margin-bottom: 16px;
+    }
+
+        .filter-card .card-header {
+            background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+            border-bottom: 1px solid #dde3ff;
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 12px 20px;
+        }
+
+        .filter-card .card-body {
+            padding: 16px 20px;
+        }
+
+    /* ── TABLO KARTI ── */
+    .table-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+        .table-card .card-header {
+            background: white;
+            border-bottom: 2px solid var(--gray-200);
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 14px 20px;
+        }
+
+    /* ── FORM ELEMENTLERİ ── */
+    .form-control-sm, .form-select-sm {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.82rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+        .form-control-sm:focus, .form-select-sm:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+        }
+
+    /* ── BADGES ── */
+    .badge-aktif {
+        background: var(--success-light);
+        color: var(--success);
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-iptal {
+        background: var(--danger-light);
+        color: var(--danger);
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-bekliyor {
+        background: var(--warning-light);
+        color: var(--warning);
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-transfer {
+        background: #e8f0fe;
+        color: var(--primary);
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-hata {
+        background: #fce8e6;
+        color: #c62828;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ── TABLO ── */
+    table.dataTable thead th {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #555;
+        background: var(--gray-100);
+        border-bottom: 2px solid var(--gray-200);
+        white-space: nowrap;
+        padding: 10px 12px;
+    }
+
+    table.dataTable tbody td {
+        font-size: 0.81rem;
+        vertical-align: middle;
+        padding: 8px 12px;
+    }
+
+    table.dataTable tbody tr:hover td {
+        background: #f0f7ff !important;
+    }
+
+    table.dataTable tbody tr.table-success td {
+        background: #f0faf3 !important;
+    }
+
+    table.dataTable tbody tr.table-success:hover td {
+        background: #e0f5e8 !important;
+    }
+
+    table.dataTable tbody tr.table-danger td {
+        background: #fff5f5 !important;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .btn-action {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        border: 1.5px solid;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all .15s;
+        background: transparent;
+        padding: 0;
+        text-decoration: none;
+    }
+
+    .btn-action-view {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+        .btn-action-view:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+    .btn-action-pdf {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+        .btn-action-pdf:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+    .btn-action-logo {
+        border-color: var(--success);
+        color: var(--success);
+        width: auto;
+        padding: 0 8px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: .3px;
+    }
+
+        .btn-action-logo:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-action-logo.transferred {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+            .btn-action-logo.transferred:hover {
+                background: var(--primary);
+                color: white;
+            }
+
+    .btn-action-statu {
+        border-color: #9c27b0;
+        color: #9c27b0;
+        width: auto;
+        padding: 0 6px;
+        font-size: 0.68rem;
+        font-weight: 700;
+    }
+
+        .btn-action-statu:hover {
+            background: #9c27b0;
+            color: white;
+        }
+
+    /* ── AMBAR/SATIŞ ELEMANI DROPDOWN ── */
+    .select-inline {
+        border: 1.5px solid var(--border);
+        border-radius: 7px;
+        font-size: 0.72rem;
+        padding: 3px 6px;
+        height: 28px;
+        min-width: 100px;
+        max-width: 130px;
+        background: white;
+        cursor: pointer;
+        transition: border-color .2s;
+    }
+
+        .select-inline:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .select-inline.not-selected {
+            border-color: #ff9800;
+            background: #fff8e1;
+            color: #e65100;
+        }
+
+        .select-inline.selected {
+            border-color: #4caf50;
+        }
+
+    /* ── TOPLU İŞLEM BAR ── */
+    .bulk-bar {
+        display: none;
+        background: linear-gradient(135deg, #1a73e8, #0d47a1);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 16px rgba(26,115,232,0.3);
+    }
+
+        .bulk-bar.show {
+            display: flex;
+        }
+
+    /* ── FİLTRE CHIP'LERİ ── */
+    .filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .filter-chip {
+        background: #e8f0fe;
+        color: var(--primary);
+        border: 1px solid #c5d8fd;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-chip.chip-success {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: #a8d5b5;
+        }
+
+            .filter-chip.chip-success:hover, .filter-chip.chip-success.active {
+                background: var(--success);
+                color: white;
+                border-color: var(--success);
+            }
+
+        .filter-chip.chip-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: #f5b8b8;
+        }
+
+            .filter-chip.chip-danger:hover, .filter-chip.chip-danger.active {
+                background: var(--danger);
+                color: white;
+                border-color: var(--danger);
+            }
+
+        .filter-chip.chip-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+            border-color: #ffd180;
+        }
+
+            .filter-chip.chip-warning:hover, .filter-chip.chip-warning.active {
+                background: var(--warning);
+                color: white;
+                border-color: var(--warning);
+            }
+
+    /* ── MODAL ── */
+    .modal-header-blue {
+        background: linear-gradient(135deg, #1a73e8, #0d47a1);
+        border: none;
+        padding: 1.2rem 1.5rem;
+    }
+
+    #previewContent {
+        padding: 16px;
+        background: #fafafa;
+        min-height: 300px;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+    }
+
+    .stat-item {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .stat-item .stat-num {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .stat-item.stat-total {
+            border-color: var(--primary);
+        }
+
+        .stat-item.stat-success {
+            border-color: var(--success);
+        }
+
+        .stat-item.stat-pending {
+            border-color: var(--warning);
+        }
+
+        .stat-item.stat-error {
+            border-color: var(--danger);
+        }
+
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.82rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 3px 6px;
+        font-size: 0.82rem;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+        font-size: 0.78rem;
+        color: var(--gray-500);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        font-size: 0.78rem !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: white !important;
+        }
+</style>
+@if (Model.Invoices.Any())
+{
+    var sayfadakiUuidler = Model.Invoices
+        .Where(i => i.Uuid != null)
+        .Select(i => i.Uuid!)
+        .ToHashSet();
+
+    var aktarildiSayi = sayfadakiUuidler.Count(u => Model.AktarilmisUuidler.Contains(u));
+    var hataSayi = sayfadakiUuidler.Count(u => Model.HataMap.ContainsKey(u));
+    var toplamSayi = sayfadakiUuidler.Count;
+    var bekliyorSayi = toplamSayi - aktarildiSayi - hataSayi;
+    if (bekliyorSayi < 0) bekliyorSayi = 0;
+
+    <div class="stats-bar mb-3">
+        <div class="stat-item stat-total">
+            <span style="color:var(--primary)">📄</span>
+            <span class="stat-num" style="color:var(--primary)">@toplamSayi</span>
+            <span style="color:#666">Toplam</span>
+        </div>
+        <div class="stat-item stat-success">
+            <span>✅</span>
+            <span class="stat-num" style="color:var(--success)">@aktarildiSayi</span>
+            <span style="color:#666">Aktarıldı</span>
+        </div>
+        <div class="stat-item stat-pending">
+            <span>⏳</span>
+            <span class="stat-num" style="color:var(--warning)">@bekliyorSayi</span>
+            <span style="color:#666">Bekliyor</span>
+        </div>
+        @if (hataSayi > 0)
+        {
+            <div class="stat-item stat-error">
+                <span>❌</span>
+                <span class="stat-num" style="color:var(--danger)">@hataSayi</span>
+                <span style="color:#666">Hata</span>
+            </div>
+        }
+    </div>
+}
+
+<div class="bulk-bar" id="bulkBar">
+    <span id="bulkCount" style="font-weight:700;font-size:0.9rem;">0 fatura seçildi</span>
+    <div class="ms-auto d-flex gap-2 flex-wrap">
+        <button class="btn btn-light btn-sm fw-bold" onclick="topluTransfer()">
+            🚀 Toplu Aktar
+        </button>
+        <button class="btn btn-warning btn-sm fw-bold" onclick="topluStatuBoz()">
+            ↩ Toplu Statü Boz
+        </button>
+        <button class="btn btn-outline-light btn-sm" onclick="clearSelection()">
+            ✕ İptal
+        </button>
+    </div>
+</div>
+
+<!-- FİLTRELER -->
+<div class="filter-card mb-3">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 d-flex align-items-center gap-2" style="font-size:0.9rem;font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="var(--primary)">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+            </svg>
+            Filtreler
+        </h5>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" type="button"
+                data-bs-toggle="collapse" data-bs-target="#filterCollapse" style="font-size:0.75rem;">
+            ▼
+        </button>
+    </div>
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body">
+            <form method="get" asp-action="Index" asp-controller="SalesInvoice" id="filterForm">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">
+                            Başlangıç <span style="color:red">*</span>
+                        </label>
+                        <input type="date" name="BaslangicTarihi" class="form-control form-control-sm" required
+                               value="@Model.Filter.BaslangicTarihi?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Bitiş
+                            <span style="color:red">*</span>
+                        </label>
+                        <input type="date" name="BitisTarihi" class="form-control form-control-sm"
+                               value="@Model.Filter.BitisTarihi?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Fatura No</label>
+                        <input type="text" name="FaturaNo" class="form-control form-control-sm"
+                               value="@Model.Filter.FaturaNo" placeholder="Ara..." />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">VKN / TCKN</label>
+                        <input type="text" name="AliciVkn" class="form-control form-control-sm"
+                               value="@Model.Filter.AliciVkn" placeholder="Kimlik no..." />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Ünvan</label>
+                        <input type="text" name="AliciUnvan" class="form-control form-control-sm"
+                               value="@Model.Filter.AliciUnvan" placeholder="Firma adı..." />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Sayfa</label>
+                        <select name="PageSize" class="form-select form-select-sm">
+                            @foreach (var s in new[] { 50, 100, 200, 500 })
+                            {
+                                <option value="@s" selected="@(Model.Filter.PageSize == s)">@s</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end gap-1">
+                        <button type="button" class="btn btn-primary btn-sm w-100"
+                                style="font-size:0.78rem;"
+                                onclick="filtreGonder()">
+                            🔍 Filtrele
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hızlı filtre chip'leri -->
+                <div class="filter-chips mt-3" id="quickFilters">
+                    <span class="text-muted me-1" style="font-size:0.72rem;align-self:center;">Hızlı:</span>
+                    <span class="filter-chip chip-success" onclick="quickFilter('aktarildi')" id="chip-aktarildi">✅ Aktarıldı</span>
+                    <span class="filter-chip chip-warning" onclick="quickFilter('bekliyor')" id="chip-bekliyor">⏳ Bekliyor</span>
+                    <span class="filter-chip chip-danger" onclick="quickFilter('hata')" id="chip-hata">❌ Hata Alanlar</span>
+                    <span class="filter-chip chip-warning" onclick="quickFilter('ambar-yok')" id="chip-ambar-yok">🏭 Ambar Seçilmemiş</span>
+                    <span class="filter-chip chip-warning" onclick="quickFilter('eleman-yok')" id="chip-eleman-yok">👤 S.Elemanı Seçilmemiş</span>
+                    <span class="filter-chip" onclick="quickFilter('hepsi')" id="chip-hepsi">📋 Tümü</span>
+                </div>
+
+                <input type="hidden" name="Page" value="1" />
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- TABLO -->
+<div class="table-card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5z" />
+            </svg>
+            <h5 class="mb-0" style="font-size:0.9rem;font-weight:700;">Satış Faturaları</h5>
+            @if (Model.TotalCount > 0)
+            {
+                <span class="kayit-badge" style="background:#e8f0fe;color:var(--primary);font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:700;">
+                    @Model.TotalCount kayıt
+                </span>
+            }
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm"
+                    onclick="satisElemaniCacheYenile()"
+                    title="Satış Elemanı Listesini Yenile"
+                    style="font-size:0.78rem;">
+                🔄 S.Elemanı
+            </button>
+            <button class="btn btn-outline-secondary btn-sm"
+                    onclick="exportExcel()"
+                    style="font-size:0.78rem;">
+                📊 Excel
+            </button>
+            <button class="btn btn-outline-primary btn-sm"
+                    onclick="selectAll()"
+                    style="font-size:0.78rem;"
+                    id="selectAllBtn">
+                ☑ Tümünü Seç
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger m-3 d-flex align-items-center gap-2">
+                ⚠️ @Model.ErrorMessage
+            </div>
+        }
+        else if (!Model.Invoices.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <div style="font-size:3rem;">📄</div>
+                <p class="mt-2" style="font-size:.85rem;">Filtreleme yaparak satış faturalarını görüntüleyin.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table id="invoiceTable" class="display table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width:36px;">
+                                <input type="checkbox" id="checkAll" onchange="toggleAll(this)" style="cursor:pointer;">
+                            </th>
+                            <th>Fatura No</th>
+                            <th>Tarih</th>
+                            <th>Alıcı</th>
+                            <th>VKN/TC</th>
+                            <th class="text-end">Matrah</th>
+                            <th class="text-end">KDV</th>
+                            <th class="text-end">Toplam</th>
+                            <th>Ambar</th>
+                            <th>Satış El.</th>
+                            <th>Durum</th>
+                            <th class="text-center" style="width:160px;">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var inv in Model.Invoices)
+                        {
+                            var aktarildi = Model.AktarilmisUuidler.Contains(inv.Uuid ?? "");
+                            var ambarId = Model.FaturaAmbarMap.ContainsKey(inv.Uuid ?? "") ? Model.FaturaAmbarMap[inv.Uuid!] : 0;
+                            var satisElemani = Model.FaturaSatisElemaniMap.ContainsKey(inv.Uuid ?? "") ? Model.FaturaSatisElemaniMap[inv.Uuid!] : "";
+                            var hataVar = Model.HataMap.ContainsKey(inv.Uuid ?? "");
+                            var hataMesaji = hataVar ? Model.HataMap[inv.Uuid!] : "";
+                            var rowClass = aktarildi ? "table-success" : (hataVar ? "table-danger" : "");
+
+                            <tr class="@rowClass"
+                                data-uuid="@inv.Uuid" 
+                                data-doc-type="@inv.DocType" 
+                                data-aktarildi="@aktarildi.ToString().ToLower()"
+                                data-hata="@(hataVar ? "var" : "yok")"
+                                data-ambar="@(ambarId > 0 ? "var" : "yok")"
+                                data-eleman="@(string.IsNullOrEmpty(satisElemani) ? "yok" : "var")">
+
+                                <td class="text-center">
+                                    <input type="checkbox" class="row-check" value="@inv.Uuid"
+                                           onchange="onRowCheck()" style="cursor:pointer;" />
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-1">
+                                        @if (inv.DocType == "earchive")
+                                        {
+                                            <span style="background:#fff8e1;color:#f57c00;font-size:0.65rem;padding:2px 6px;border-radius:10px;font-weight:700;border:1px solid #ffe082;">e-Arşiv</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="background:#e3f2fd;color:#1565c0;font-size:0.65rem;padding:2px 6px;border-radius:10px;font-weight:700;border:1px solid #90caf9;">e-Fatura</span>
+                                        }
+                                        <small class="fw-bold" style="font-family:monospace;font-size:0.78rem;">@inv.FaturaNo</small>
+                                    </div>
+                                </td>
+
+                                <td data-order="@inv.FaturaTarihi?.ToString("yyyyMMdd")">
+                                    <small>@inv.FaturaTarihi?.ToString("dd.MM.yyyy")</small>
+                                </td>
+
+                                <td style="max-width:180px;">
+                                    <small class="d-block text-truncate" title="@inv.AliciUnvan" style="max-width:180px;">
+                                        @inv.AliciUnvan
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <small style="font-family:monospace;font-size:0.75rem;">
+                                        @(string.IsNullOrEmpty(inv.AliciVkn) ? inv.AliciTckn : inv.AliciVkn)
+                                    </small>
+                                </td>
+
+                                <td class="text-end"><small>@inv.Matrah.ToString("N2")</small></td>
+                                <td class="text-end"><small>@inv.KdvTutar.ToString("N2")</small></td>
+                                <td class="text-end">
+                                    <small class="fw-bold">@inv.GenelToplam.ToString("N2")</small>
+                                    <small class="text-muted ms-1" style="font-size:0.68rem;">@inv.ParaBirimi</small>
+                                </td>
+
+                                <!-- AMBAR SEÇİMİ -->
+                                <td>
+                                    <select class="select-inline @(ambarId > 0 ? "selected" : "not-selected")"
+                                            data-uuid="@inv.Uuid"
+                                            id="ambar_@inv.Uuid"
+                                            onchange="setFaturaAmbar('@inv.Uuid', this)"
+                                            @(aktarildi ? "disabled" : "")>
+                                        <option value="">-- Seç --</option>
+                                        @foreach (var a in Model.Ambarlar)
+                                        {
+                                            <option value="@a.Id" selected="@(ambarId == a.Id)">@a.Ad</option>
+                                        }
+                                    </select>
+                                </td>
+
+                                <!-- SATIŞ ELEMANI SEÇİMİ -->
+                                <td>
+                                    <select class="select-inline @(string.IsNullOrEmpty(satisElemani) ? "not-selected" : "selected")"
+                                            data-uuid="@inv.Uuid"
+                                            id="eleman_@inv.Uuid"
+                                            onchange="setFaturaSatisElemani('@inv.Uuid', this)"
+                                            @(aktarildi ? "disabled" : "")>
+                                        <option value="">-- Seç --</option>
+                                        @foreach (var s in Model.SatisElemanlari)
+                                        {
+                                            <option value="@s.Code" selected="@(satisElemani == s.Code)">@s.Description</option>
+                                        }
+                                    </select>
+                                </td>
+
+                                <!-- DURUM -->
+                                <td>
+                                    @if (aktarildi)
+                                    {
+                                        <span class="badge-transfer">✅ Aktarıldı</span>
+                                    }
+                                    else if (hataVar)
+                                    {
+                                        <span class="badge-hata" style="cursor:pointer;"
+                                              onclick="Swal.fire({title:'Transfer Hatası', html:'@Html.Raw(hataMesaji?.Replace("'", "&#39;"))', icon:'error'})">
+                                            ❌ Hata
+                                        </span>
+                                    }
+                                    else if (inv.IptalMi)
+                                    {
+                                        <span class="badge-iptal">❌ İptal</span>
+                                    }
+                                    else if (inv.GibDurumKodu == 1300)
+                                    {
+                                        <span class="badge-aktif">✓ Onaylı</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-bekliyor">⏳ Bekliyor</span>
+                                    }
+                                </td>
+
+                                <!-- İŞLEMLER -->
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        <button type="button" class="btn-action btn-action-view"
+                                                title="HTML Görüntüle"
+                                                onclick="previewInvoice('@inv.Uuid', 'html')">
+                                            👁
+                                        </button>
+                                        <button type="button" class="btn-action btn-action-pdf"
+                                                title="PDF Görüntüle"
+                                                onclick="previewInvoice('@inv.Uuid', 'pdf')">
+                                            📄
+                                        </button>
+                                        @if (!aktarildi)
+                                        {
+                                            <button type="button"
+                                                    class="btn-action btn-action-logo"
+                                                    title="Logo ERP'ye Aktar"
+                                                    onclick="transferToLogo('@inv.Uuid', '@inv.FaturaNo')">
+                                                🚀 Logo
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button"
+                                                    class="btn-action btn-action-statu"
+                                                    title="Statü Boz"
+                                                    onclick="statuBoz('@inv.Uuid', '@inv.FaturaNo')">
+                                                ↩ Boz
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:16px;overflow:hidden;">
+            <div class="modal-header modal-header-blue">
+                <h5 class="modal-title text-white fw-bold">📄 Fatura Görüntüle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="text-center" id="previewLoading" style="padding:60px 0;">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 text-muted" style="font-size:.85rem;">Yükleniyor...</p>
+                </div>
+                <div id="previewContent" style="display:none;"></div>
+                <iframe id="previewPdf" style="display:none;width:100%;height:80vh;border:none;"></iframe>
+                <div id="previewError" class="alert alert-danger m-3" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="/thema/assets/js/plugin/datatables/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var dtTable = null;
+        var activeChip = 'hepsi';
+
+        var ambarKodMap = {};
+        @foreach (var a in Model.Ambarlar)
+        {
+                <text>ambarKodMap['@a.Id'] = '@a.Kod';</text>
+        }
+
+        // ── HATA MESAJI SADELESTİR ────────────────────────────
+        function sadeleHata(raw) {
+            if (!raw) return 'Aktarim basarisiz.';
+            try {
+                var jsonStr = raw.replace('Logo ERP hata: ', '').trim();
+                var obj = JSON.parse(jsonStr);
+                if (obj.message && obj.message.length > 0) {
+                    var msg = obj.message[0];
+                    var idx = msg.indexOf('Hata Olustu:');
+                    if (idx >= 0) msg = msg.substring(idx + 12).trim();
+                    idx = msg.indexOf('Hata Oluştu:');
+                    if (idx >= 0) msg = msg.substring(idx + 12).trim();
+                    return msg.split('\n')[0].trim();
+                }
+            } catch(e) {}
+            return raw;
+        }
+
+        function hataBadge(msg) {
+            var escaped = sadeleHata(msg).replace(/'/g, "&#39;").replace(/\n/g, '<br>');
+            return '<span class="badge-hata" style="cursor:pointer;" ' +
+                   'onclick="Swal.fire({title:\'Transfer Hatasi\',html:\'' + escaped + '\',icon:\'error\'})">❌ Hata</span>';
+        }
+
+        // ── STATS GÜNCELLE ────────────────────────────────────
+        function updateStats() {
+            var rows = dtTable
+                ? Array.from(dtTable.rows().nodes())
+                : Array.from(document.querySelectorAll('#invoiceTable tbody tr'));
+            var toplam    = rows.length;
+            var aktarildi = rows.filter(function(r) { return r.getAttribute('data-aktarildi') === 'true'; }).length;
+            var hata      = rows.filter(function(r) { return r.classList.contains('table-danger'); }).length;
+            var bekliyor  = toplam - aktarildi - hata;
+            if (bekliyor < 0) bekliyor = 0;
+
+            var elToplam = document.querySelector('.stat-item.stat-total .stat-num');
+            if (elToplam) elToplam.textContent = toplam;
+
+            var elAktarildi = document.querySelector('.stat-item.stat-success .stat-num');
+            if (elAktarildi) elAktarildi.textContent = aktarildi;
+
+            var elBekliyor = document.querySelector('.stat-item.stat-pending .stat-num');
+            if (elBekliyor) elBekliyor.textContent = bekliyor;
+                    var elKayit = document.querySelector('.kayit-badge');
+        if (elKayit) elKayit.textContent = toplam + ' kayıt';
+
+            var elHata = document.querySelector('.stat-item.stat-error .stat-num');
+            if (hata > 0) {
+                if (elHata) {
+                    elHata.textContent = hata;
+                } else {
+                    var statsBar = document.querySelector('.stats-bar');
+                    if (statsBar) {
+                        statsBar.insertAdjacentHTML('beforeend',
+                            '<div class="stat-item stat-error">' +
+                            '<span>❌</span>' +
+                            '<span class="stat-num" style="color:var(--danger)">' + hata + '</span>' +
+                            '<span style="color:#666">Hata</span>' +
+                            '</div>');
+                    }
+                }
+            } else if (elHata) {
+                elHata.closest('.stat-item').remove();
+            }
+        }
+
+        // ── DATATABLE ──────────────────────────────────────────
+        $(document).ready(function () {
+            if ($('#invoiceTable tbody tr').length > 0) {
+                dtTable = $('#invoiceTable').DataTable({
+                    pageLength: 25,
+                    order: [[2, 'desc']],
+                    language: { url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json' },
+                    columnDefs: [
+                        { orderable: false, targets: [0, 8, 9, 11] },
+                        { className: 'text-end', targets: [5, 6, 7] },
+                        { searchable: false, targets: [0, 8, 9, 10, 11] }
+                    ],
+                    buttons: [{ extend: 'excel', text: 'Excel', title: 'Satis Faturalari', exportOptions: { columns: [1,2,3,4,5,6,7,10] } }]
+                }); 
+                updateStats();
+            }
+
+            $('#previewModal').on('hidden.bs.modal', function () {
+                $('#previewContent').html('').hide();
+                $('#previewPdf').attr('src','').hide();
+                $('#previewError').hide();
+                $('#previewLoading').show();
+            });
+
+            document.querySelectorAll('[id^="eleman_"]').forEach(function(sel) {
+                var uuid = sel.getAttribute('data-uuid');
+                if (sel.value) {
+                    sel.classList.remove('not-selected'); sel.classList.add('selected');
+                    var row = sel.closest('tr');
+                    if (row) row.setAttribute('data-eleman', 'var');
+                } else {
+                    var saved = sessionStorage.getItem('eleman_' + uuid);
+                    if (saved) {
+                        sel.value = saved;
+                        sel.classList.remove('not-selected'); sel.classList.add('selected');
+                        var row2 = sel.closest('tr');
+                        if (row2) row2.setAttribute('data-eleman', 'var');
+                    }
+                }
+            });
+        });
+
+        function exportExcel() { if (dtTable) dtTable.button(0).trigger(); }
+
+        // ── HIZLI FİLTRE ──────────────────────────────────────
+        function quickFilter(type) {
+            activeChip = type;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            document.getElementById('chip-' + type)?.classList.add('active');
+            if (!dtTable) return;
+            $.fn.dataTable.ext.search = [];
+            if (type === 'hepsi') { dtTable.draw(); return; }
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var row = dtTable.row(dataIndex).node();
+                var aktarildi = row.getAttribute('data-aktarildi') === 'true';
+                var ambar  = row.getAttribute('data-ambar');
+                var eleman = row.getAttribute('data-eleman');
+                if (type === 'aktarildi')  return aktarildi;
+                if (type === 'bekliyor')   return !aktarildi && !row.classList.contains('table-danger');
+                if (type === 'ambar-yok')  return !aktarildi && ambar === 'yok';
+                if (type === 'eleman-yok') return !aktarildi && eleman === 'yok';
+                if (type === 'hata')       return row.classList.contains('table-danger');
+                return true;
+            });
+            dtTable.draw();
+        }
+
+        // ── CHECKBOX ──────────────────────────────────────────
+        function toggleAll(cb) {
+            if (dtTable) {
+                dtTable.rows().nodes().each(function(row) {
+                    var c = row.querySelector('.row-check');
+                    if (c) c.checked = cb.checked;
+                });
+            } else {
+                document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked);
+            }
+            onRowCheck();
+        }
+
+        function onRowCheck() {
+            var allRows = dtTable ? dtTable.rows().nodes() : document.querySelectorAll('.row-check');
+            var total   = allRows.length;
+            var checked = dtTable
+                ? Array.from(allRows).filter(r => r.querySelector('.row-check')?.checked).length
+                : document.querySelectorAll('.row-check:checked').length;
+            document.getElementById('bulkCount').textContent = checked + ' fatura secildi';
+            document.getElementById('bulkBar').classList.toggle('show', checked > 0);
+            document.getElementById('checkAll').indeterminate = checked > 0 && checked < total;
+            document.getElementById('checkAll').checked = total > 0 && checked === total;
+        }
+
+        function selectAll() {
+            if (dtTable) {
+                dtTable.rows().nodes().each(function(row) {
+                    var cb = row.querySelector('.row-check');
+                    if (cb) cb.checked = true;
+                });
+            } else {
+                document.querySelectorAll('.row-check').forEach(c => c.checked = true);
+            }
+            onRowCheck();
+        }
+
+        function clearSelection() {
+            if (dtTable) {
+                dtTable.rows().nodes().each(function(row) {
+                    var c = row.querySelector('.row-check');
+                    if (c) c.checked = false;
+                });
+            } else {
+                document.querySelectorAll('.row-check').forEach(c => c.checked = false);
+            }
+            document.getElementById('checkAll').checked = false;
+            onRowCheck();
+        }
+
+        function getSelectedUuids() {
+            if (dtTable) {
+                return Array.from(dtTable.rows().nodes())
+                    .map(r => r.querySelector('.row-check'))
+                    .filter(c => c && c.checked)
+                    .map(c => c.value);
+            }
+            return Array.from(document.querySelectorAll('.row-check:checked')).map(c => c.value);
+        }
+
+        // ── AMBAR KAYDET ──────────────────────────────────────
+        function setFaturaAmbar(uuid, select) {
+            var ambarId = parseInt(select.value);
+            if (!ambarId) return;
+            fetch('/SalesInvoice/SetFaturaAmbar?uuid=' + encodeURIComponent(uuid) + '&ambarId=' + ambarId, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    select.classList.remove('not-selected'); select.classList.add('selected');
+                    var row = select.closest('tr');
+                    if (row) row.setAttribute('data-ambar', 'var');
+                } else { Swal.fire('Hata', data.message || 'Ambar kaydedilemedi.', 'error'); }
+            })
+            .catch(() => Swal.fire('Hata', 'Baglanti hatasi.', 'error'));
+        }
+
+        // ── SATIŞ ELEMANI ─────────────────────────────────────
+        function setFaturaSatisElemani(uuid, select) {
+            select.classList.toggle('not-selected', !select.value);
+            select.classList.toggle('selected', !!select.value);
+            var row = select.closest('tr');
+            if (row) row.setAttribute('data-eleman', select.value ? 'var' : 'yok');
+            if (select.value) sessionStorage.setItem('eleman_' + uuid, select.value);
+            else sessionStorage.removeItem('eleman_' + uuid);
+        }
+
+        // ── TEK TRANSFER ──────────────────────────────────────
+        function transferToLogo(uuid, faturaNo) {
+            var row = document.querySelector('tr[data-uuid="' + uuid + '"]');
+            var docType = row ? (row.getAttribute('data-doc-type') || 'einvoice') : 'einvoice';
+            var ambarSel = document.getElementById('ambar_' + uuid);
+            var elemanSel = document.getElementById('eleman_' + uuid);
+            var ambarKodu = ambarSel && ambarSel.value ? (ambarKodMap[ambarSel.value] || '') : '';
+            var satisElemaniKodu = elemanSel ? elemanSel.value : '';
+
+            if (!ambarKodu) { Swal.fire('Uyari', 'Lutfen once ambar secin.', 'warning'); return; }
+            if (!satisElemaniKodu) { Swal.fire('Uyari', 'Lutfen once satis elemani secin.', 'warning'); return; }
+
+            Swal.fire({
+                title: "Logo ERP'ye Aktar",
+                html: '<b>' + faturaNo + '</b> faturasini aktarmak istiyor musunuz?',
+                icon: 'question', showCancelButton: true,
+                confirmButtonColor: '#2e7d32', cancelButtonColor: '#757575',
+                confirmButtonText: 'Evet, Aktar', cancelButtonText: 'Iptal', reverseButtons: true
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'Aktariliyor...', html: "Fatura Logo ERP'ye gonderiliyor...", allowOutsideClick: false, allowEscapeKey: false, didOpen: () => Swal.showLoading() });
+
+                fetch('/SalesInvoice/Transfer?uuid=' + encodeURIComponent(uuid), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ambarKodu: ambarKodu, satisElemaniKodu: satisElemaniKodu, docType: docType })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        var row2 = document.querySelector('tr[data-uuid="' + uuid + '"]');
+                        if (row2) {
+                            row2.classList.remove('table-danger');
+                            row2.classList.add('table-success');
+                            row2.setAttribute('data-aktarildi', 'true');
+                            row2.setAttribute('data-hata', 'yok');
+                            var check = row2.querySelector('.row-check'); if (check) check.checked = false;
+                            var as2 = row2.querySelector('[id^="ambar_"]'); if (as2) as2.disabled = true;
+                            var es2 = row2.querySelector('[id^="eleman_"]'); if (es2) es2.disabled = true;
+                            var durum2 = row2.querySelector('td:nth-child(11)');
+                            if (durum2) durum2.innerHTML = '<span class="badge-transfer">Aktarildi</span>';
+                            var logoBtn = row2.querySelector('.btn-action-logo');
+                            if (logoBtn) {
+                                var nb = document.createElement('button'); nb.type = 'button';
+                                nb.className = 'btn-action btn-action-statu'; nb.title = 'Statu Boz';
+                                nb.setAttribute('onclick', "statuBoz('" + uuid + "', '" + faturaNo + "')");
+                                nb.innerHTML = 'Boz'; logoBtn.replaceWith(nb);
+                            }
+                        }
+                        updateStats();
+                        Swal.fire({ title: 'Basarili!', html: '<b>' + faturaNo + "</b> Logo ERP'ye aktarildi.<br><small>Ref: " + (data.data?.logoLogicalRef ?? '-') + '</small>', icon: 'success', confirmButtonColor: '#1a73e8' });
+                    } else {
+                        var rowHata = document.querySelector('tr[data-uuid="' + uuid + '"]');
+                        if (rowHata) {
+                            rowHata.classList.add('table-danger');
+                            rowHata.setAttribute('data-hata', 'var');
+                            var durumHata = rowHata.querySelector('td:nth-child(11)');
+                            if (durumHata) durumHata.innerHTML = hataBadge(data.message);
+                        }
+                        updateStats();
+                        Swal.fire('Hata!', sadeleHata(data.message), 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Hata', 'Baglanti hatasi.', 'error'));
+            });
+        }
+
+        // ── TOPLU TRANSFER ────────────────────────────────────
+        function topluTransfer() {
+            var transferList = [], eksikAmbar = [], eksikEleman = [];
+            var checkedRows = dtTable
+                ? Array.from(dtTable.rows().nodes()).filter(r => r.querySelector('.row-check')?.checked)
+                : Array.from(document.querySelectorAll('.row-check:checked')).map(c => c.closest('tr'));
+
+            checkedRows.forEach(function(row) {
+                if (row.getAttribute('data-aktarildi') === 'true') return;
+                var uuid = row.querySelector('.row-check').value;
+                var ambarSel = row.querySelector('[id^="ambar_"]');
+                var elemanSel = row.querySelector('[id^="eleman_"]');
+                var faturaNo = row.querySelector('td:nth-child(2) small')?.textContent?.trim() || uuid;
+                var ambarKodu = ambarSel && ambarSel.value ? (ambarKodMap[ambarSel.value] || '') : '';
+                var satisElemaniKodu = elemanSel ? elemanSel.value : '';
+                var docType = row.getAttribute('data-doc-type') || 'einvoice';
+                if (!ambarKodu) eksikAmbar.push(faturaNo);
+                if (!satisElemaniKodu) eksikEleman.push(faturaNo);
+                transferList.push({ uuid: uuid, faturaNo: faturaNo, ambarKodu: ambarKodu, satisElemaniKodu: satisElemaniKodu, docType: docType });
+            });
+
+            if (!transferList.length) { Swal.fire('Uyari', 'Aktarilacak fatura secin.', 'warning'); return; }
+            var gonderilecek = transferList.filter(t => t.ambarKodu && t.satisElemaniKodu);
+
+            if (eksikAmbar.length > 0 || eksikEleman.length > 0) {
+                if (!gonderilecek.length) { Swal.fire('Uyari', 'Hicbir faturada ambar ve satis elemani secili degil.', 'warning'); return; }
+                var html2 = '';
+                if (eksikAmbar.length > 0) html2 += '<b>' + eksikAmbar.length + '</b> faturada ambar secilmemis.<br>';
+                if (eksikEleman.length > 0) html2 += '<b>' + eksikEleman.length + '</b> faturada satis elemani secilmemis.<br>';
+                html2 += '<br>Bu faturalar atlanacak. <b>' + gonderilecek.length + '</b> fatura aktarilacak. Devam?';
+                Swal.fire({ title: 'Eksik Bilgi Var', html: html2, icon: 'warning', showCancelButton: true, confirmButtonColor: '#1a73e8', cancelButtonColor: '#757575', confirmButtonText: 'Devam Et (' + gonderilecek.length + ' fatura)', cancelButtonText: 'Iptal', reverseButtons: true })
+                .then(function(r) { if (r.isConfirmed) doTopluTransfer(gonderilecek); });
+                return;
+            }
+            Swal.fire({ title: 'Toplu Aktarim', html: '<b>' + gonderilecek.length + "</b> fatura Logo ERP'ye aktarilacak. Devam?", icon: 'question', showCancelButton: true, confirmButtonColor: '#1a73e8', cancelButtonColor: '#757575', confirmButtonText: 'Aktar', cancelButtonText: 'Iptal', reverseButtons: true })
+            .then(function(r) { if (r.isConfirmed) doTopluTransfer(gonderilecek); });
+        }
+
+        function doTopluTransfer(transferList) {
+            Swal.fire({ title: 'Aktariliyor...', html: '<b>' + transferList.length + '</b> fatura gonderiliyor...', allowOutsideClick: false, allowEscapeKey: false, didOpen: () => Swal.showLoading() });
+
+             var requestBody = {
+            items: transferList.map(t => ({
+                uuid:             t.uuid,
+                docType:          t.docType,
+                ambarKodu:        t.ambarKodu,
+                satisElemaniKodu: t.satisElemaniKodu
+            }))
+        };
+
+            fetch('/SalesInvoice/TopluTransfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    Swal.fire('Hata', sadeleHata(data.message || 'Aktarim basarisiz.'), 'error');
+                    return;
+                }
+
+                var results = data.data || [];
+                results.forEach(function(r) {
+                    var row = document.querySelector('tr[data-uuid="' + r.uuid + '"]');
+                    if (!row) return;
+                    if (r.success) {
+                        row.classList.remove('table-danger'); row.classList.add('table-success');
+                        row.setAttribute('data-aktarildi', 'true'); row.setAttribute('data-hata', 'yok');
+                        var check = row.querySelector('.row-check'); if (check) check.checked = false;
+                        var as = row.querySelector('[id^="ambar_"]'); if (as) as.disabled = true;
+                        var es = row.querySelector('[id^="eleman_"]'); if (es) es.disabled = true;
+                        var durum = row.querySelector('td:nth-child(11)');
+                        if (durum) durum.innerHTML = '<span class="badge-transfer">Aktarildi</span>';
+                        var lb = row.querySelector('.btn-action-logo');
+                        if (lb) {
+                            var nb = document.createElement('button'); nb.type='button';
+                            nb.className='btn-action btn-action-statu'; nb.title='Statu Boz';
+                            nb.setAttribute('onclick',"statuBoz('"+r.uuid+"','"+r.eLogoFaturaNo+"')");
+                            nb.innerHTML='Boz'; lb.replaceWith(nb);
+                        }
+                    } else {
+                        row.classList.add('table-danger');
+                        row.setAttribute('data-hata', 'var');
+                        var durumHata = row.querySelector('td:nth-child(11)');
+                        if (durumHata) durumHata.innerHTML = hataBadge(r.error);
+                    }
+                });
+
+                clearSelection();
+                updateStats();
+
+                var basariliList  = results.filter(r => r.success);
+                var basarisizList = results.filter(r => !r.success);
+                var html = '';
+                if (basariliList.length > 0) html += '<b>' + basariliList.length + '</b> fatura basariyla aktarildi.';
+                if (basarisizList.length > 0) {
+                    html += '<br><br><b>' + basarisizList.length + '</b> fatura basarisiz:';
+                    html += '<div style="max-height:200px;overflow-y:auto;margin-top:8px;text-align:left;">';
+                    basarisizList.forEach(function(r) {
+                        html += '<div style="background:#fff5f5;border:1px solid #ffcdd2;border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:0.78rem;">';
+                        html += '<b>' + (r.eLogoFaturaNo || r.uuid) + '</b><br>';
+                        html += '<span style="color:#c62828;font-size:0.73rem;">' + sadeleHata(r.error) + '</span>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                Swal.fire({ title: 'Toplu Aktarim Tamamlandi', html: html, icon: basarisizList.length===0?'success':'warning', confirmButtonColor: '#1a73e8', width: basarisizList.length>0?'600px':'400px' });
+            })
+            .catch(() => Swal.fire('Hata', 'Baglanti hatasi.', 'error'));
+        }
+
+        // ── STATÜ BOZ ─────────────────────────────────────────
+        function statuBoz(uuid, faturaNo) {
+            Swal.fire({ title: 'Statu Boz', html: '<b>' + faturaNo + '</b> faturasinin aktarim statusu silinecek. Emin misiniz?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#9c27b0', cancelButtonColor: '#757575', confirmButtonText: 'Evet, Boz', cancelButtonText: 'Iptal', reverseButtons: true })
+            .then(function(result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'Isleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                fetch('/SalesInvoice/StatuBoz?uuid=' + encodeURIComponent(uuid), { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        var row = document.querySelector('tr[data-uuid="' + uuid + '"]');
+                        if (row) {
+                            row.classList.remove('table-success', 'table-danger');
+                            row.setAttribute('data-aktarildi', 'false');
+                            row.setAttribute('data-hata', 'yok');
+                            var check = row.querySelector('.row-check'); if (check) check.disabled = false;
+                            var as = row.querySelector('[id^="ambar_"]'); if (as) as.disabled = false;
+                            var es = row.querySelector('[id^="eleman_"]'); if (es) es.disabled = false;
+                            var durum = row.querySelector('td:nth-child(11)');
+                            if (durum) durum.innerHTML = '<span class="badge-bekliyor">Bekliyor</span>';
+                            var sb = row.querySelector('.btn-action-statu');
+                            if (sb) {
+                                var nb = document.createElement('button'); nb.type='button';
+                                nb.className='btn-action btn-action-logo'; nb.title="Logo ERP'ye Aktar";
+                                nb.setAttribute('onclick',"transferToLogo('"+uuid+"','"+faturaNo+"')");
+                                nb.innerHTML='Logo'; sb.replaceWith(nb);
+                            }
+                        }
+                        updateStats();
+                        Swal.fire({ title: 'Basarili', text: 'Statu bozuldu.', icon: 'success', timer: 1500, showConfirmButton: false });
+                    } else { Swal.fire('Hata', data.message || 'Islem basarisiz.', 'error'); }
+                })
+                .catch(() => Swal.fire('Hata', 'Baglanti hatasi.', 'error'));
+            });
+        }
+
+        // ── TOPLU STATÜ BOZ ───────────────────────────────────
+        function topluStatuBoz() {
+            var uuids = getSelectedUuids();
+            if (!uuids.length) { Swal.fire('Uyari', 'Fatura secin.', 'warning'); return; }
+            Swal.fire({ title: 'Toplu Statu Boz', html: '<b>' + uuids.length + '</b> faturanin statusu bozulacak.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#9c27b0', cancelButtonColor: '#757575', confirmButtonText: 'Evet', cancelButtonText: 'Iptal', reverseButtons: true })
+            .then(function(result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'Isleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                fetch('/SalesInvoice/TopluStatuBoz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(uuids) })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        var b = data.data?.basarili ?? 0, f = data.data?.basarisiz ?? 0, h = data.data?.hatalar ?? [];
+                        var html2 = '<b>' + b + '</b> basarili';
+                        if (f > 0) html2 += '<br><b>' + f + '</b> basarisiz';
+                        if (h.length > 0) html2 += '<br><small>' + h.join('<br>') + '</small>';
+                        Swal.fire({ title: 'Tamamlandi', html: html2, icon: f===0?'success':'warning', confirmButtonColor: '#1a73e8' }).then(() => location.reload());
+                    } else { Swal.fire('Hata', data.message, 'error'); }
+                })
+                .catch(() => Swal.fire('Hata', 'Baglanti hatasi.', 'error'));
+            });
+        }
+
+        // ── SATIŞ ELEMANI CACHE YENİLE ────────────────────────
+        function satisElemaniCacheYenile() {
+            Swal.fire({ title: 'Cache Yenileniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            fetch('/SalesInvoice/YenileSatisElemaniCache', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { Swal.fire({ title: 'Basarili', text: 'Satis elemani listesi yenilendi.', icon: 'success', timer: 1500, showConfirmButton: false }).then(() => location.reload()); }
+                else { Swal.fire('Hata', data.message || 'Yenilenemedi.', 'error'); }
+            })
+            .catch(() => Swal.fire('Hata', 'Baglanti hatasi.', 'error'));
+        }
+
+        // ── GÖRSEL ────────────────────────────────────────────
+        function previewInvoice(uuid, format) {
+            var row = document.querySelector('tr[data-uuid="' + uuid + '"]');
+            var docType = row ? (row.getAttribute('data-doc-type') || 'einvoice') : 'einvoice';
+            var modal = new bootstrap.Modal(document.getElementById('previewModal'));
+            $('#previewLoading').show();
+            $('#previewContent').hide();
+            $('#previewPdf').hide().attr('src','');
+            $('#previewError').hide();
+            modal.show();
+            fetch('/SalesInvoice/Preview?uuid=' + encodeURIComponent(uuid) + '&format=' + format + '&docType=' + docType)
+            .then(function(r) {
+                if (format === 'pdf') return r.blob().then(b => ({ isPdf: true, blob: b }));
+                return r.json().then(j => ({ isPdf: false, data: j }));
+            })
+            .then(function(result) {
+                $('#previewLoading').hide();
+                if (result.isPdf) { $('#previewPdf').attr('src', URL.createObjectURL(result.blob)).show(); }
+                else if (result.data.success) { $('#previewContent').html(result.data.html).show(); }
+                else { $('#previewError').text(result.data.message || 'Goruntulenemedi.').show(); }
+            })
+            .catch(function() { $('#previewLoading').hide(); $('#previewError').text('Baglanti hatasi.').show(); });
+        }
+
+        // ── FİLTRE ────────────────────────────────────────────
+        function filtreGonder() {
+            var baslangic = document.querySelector('[name="BaslangicTarihi"]').value;
+            var bitis     = document.querySelector('[name="BitisTarihi"]').value;
+            if (!baslangic || !bitis) {
+                Swal.fire('Uyarı', 'Başlangıç ve bitiş tarihi zorunludur.', 'warning');
+                return;
+            }
+            var gun = Math.round((new Date(bitis) - new Date(baslangic)) / (1000 * 60 * 60 * 24));
+            if (gun < 0) {
+                Swal.fire('Uyarı', 'Bitiş tarihi başlangıç tarihinden önce olamaz.', 'warning');
+                return;
+            }
+            if (gun > 30) {
+                Swal.fire('Uyarı', 'Tarih aralığı en fazla 30 gün olabilir.', 'warning');
+                return;
+            }
+            document.getElementById('filterForm').submit();
+        }
+    </script>
+}
