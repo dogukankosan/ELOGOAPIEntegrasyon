@@ -75,6 +75,13 @@ builder.Services.AddHttpClient<ILogoItemCacheService, LogoItemCacheService>(clie
 {
     ServerCertificateCustomValidationCallback =
         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+}); builder.Services.AddHttpClient<ILotTakipService, LotTakipService>(client =>  // ← buraya
+{
+    client.Timeout = TimeSpan.FromMinutes(5);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback =
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
 });
 builder.Services.AddHttpClient("Logo", client =>
 {

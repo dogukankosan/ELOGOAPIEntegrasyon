@@ -7,6 +7,10 @@ public class SalesInvoiceDto
     public string? AliciUnvan { get; set; }
     public string? AliciVkn { get; set; }
     public string? AliciTckn { get; set; }
+    public string? AliciTelefon { get; set; }
+    public string? AliciIlce { get; set; }  // town2
+    public string? AliciIl { get; set; }  // city2
+    public string? AliciUlke { get; set; }  // country
     public decimal Matrah { get; set; }
     public decimal KdvTutar { get; set; }
     public decimal GenelToplam { get; set; }

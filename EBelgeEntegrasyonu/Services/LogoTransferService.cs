@@ -1,9 +1,12 @@
-﻿using System.Text;
-using System.Text.Json;
-using EBelgeAPI.Data.Interfaces;
+﻿using EBelgeAPI.Data.Interfaces;
 using EBelgeAPI.Models.DTOs;
 using EBelgeAPI.Models.Entities;
 using EBelgeAPI.Services.Interfaces;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Web;
+using static System.Net.WebRequestMethods;
 
 namespace EBelgeAPI.Services;
 public class LogoTransferService : ILogoTransferService
@@ -14,25 +17,31 @@ public class LogoTransferService : ILogoTransferService
     private readonly ILogoSettingsRepository _logoSettingsRepo;
     private readonly ILogoItemCacheService _itemCache;       // ← eklendi
     private readonly ILogger<LogoTransferService> _logger;
+    private readonly ILogService _logService;
+ 
+   
+
     private readonly JsonSerializerOptions _jsonOpt = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
     public LogoTransferService(
-        HttpClient http,
-        ILogoTokenService tokenService,
-        ITransferRepository transferRepo,
-        ILogoSettingsRepository logoSettingsRepo,
-        ILogoItemCacheService itemCache,                     // ← eklendi
-        ILogger<LogoTransferService> logger)
+     HttpClient http,
+     IHttpClientFactory httpClientFactory,
+     ILogoTokenService tokenService,
+     ITransferRepository transferRepo,
+     ILogoSettingsRepository logoSettingsRepo,
+     ILogoItemCacheService itemCache,
+     ILogger<LogoTransferService> logger)
     {
         _http = http;
         _tokenService = tokenService;
         _transferRepo = transferRepo;
         _logoSettingsRepo = logoSettingsRepo;
-        _itemCache = itemCache;                              // ← eklendi
+        _itemCache = itemCache;
         _logger = logger;
-    }
+
+    }   
 
     // ── TOPLU TRANSFER ────────────────────────────────────
     public async Task<List<SalesTransferResultDto>> TopluTransferAsync(
@@ -122,6 +131,7 @@ public class LogoTransferService : ILogoTransferService
             transfer.LogoLogicalRef = logoRef;
             transfer.AktarimTarihi = DateTime.Now;
             await _transferRepo.UpdateAsync(transfer);
+
             return (true, new SalesTransferResultDto
             {
                 Uuid = dto.Uuid,
@@ -294,6 +304,7 @@ public class LogoTransferService : ILogoTransferService
             araptitle2 = unvan,
             araptitle3 = unvan,
             title = unvan,
+            auxCode="AKTARIM",
             customer = kimlik,
             customer2 = kimlik,
             trIdentificationNo = kimlik,
@@ -336,6 +347,7 @@ public class LogoTransferService : ILogoTransferService
         };
         return Task.FromResult(json);
     }
+
     // ── Cari bul / oluştur ────────────────────────────────
     private async Task<string?> FindOrCreateArpCodeAsync(
         SalesInvoiceDto dto, string token, string baseUrl, string firm)
@@ -386,7 +398,8 @@ public class LogoTransferService : ILogoTransferService
         object arp;
         if (isVkn)
         {
-            // ── Kurumsal firma ──
+
+            // Kurumsal:
             arp = new
             {
                 code = arpCode,
@@ -396,6 +409,11 @@ public class LogoTransferService : ILogoTransferService
                 taxNo = arpCode,
                 privateCompany = false,
                 foreignNational = false,
+                phoneNo = !string.IsNullOrWhiteSpace(dto.AliciTelefon) ? dto.AliciTelefon : null,
+                mobilePhone = !string.IsNullOrWhiteSpace(dto.AliciTelefon) ? dto.AliciTelefon : null,
+                town2 = !string.IsNullOrWhiteSpace(dto.AliciIlce) ? dto.AliciIlce : null,
+                city2 = !string.IsNullOrWhiteSpace(dto.AliciIl) ? dto.AliciIl : null,
+                country = !string.IsNullOrWhiteSpace(dto.AliciUlke) ? dto.AliciUlke : "TR",
                 salesManagement = true,
                 financeManagement = true,
                 purchaseManagement = false,
@@ -410,23 +428,30 @@ public class LogoTransferService : ILogoTransferService
             string[] parcalar = baslik.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             string ad = parcalar.Length > 0 ? parcalar[0] : baslik;
             string soyad = parcalar.Length > 1 ? parcalar[1] : "-";
+            // Şahıs:
             arp = new
             {
                 code = arpCode,
                 title = baslik,
                 orgUnit = "01",
-                cardtype = 3,          // ← 2 değil 3
+                cardtype = 3,
                 tridentificationNo = arpCode,
                 privateCompany = true,
                 foreignNational = false,
                 name = ad,
                 surname = soyad,
+                phoneNo = !string.IsNullOrWhiteSpace(dto.AliciTelefon) ? dto.AliciTelefon : null,
+                mobilePhone = !string.IsNullOrWhiteSpace(dto.AliciTelefon) ? dto.AliciTelefon : null,
+                town2 = !string.IsNullOrWhiteSpace(dto.AliciIlce) ? dto.AliciIlce : null,
+                city2 = !string.IsNullOrWhiteSpace(dto.AliciIl) ? dto.AliciIl : null,
+                country = !string.IsNullOrWhiteSpace(dto.AliciUlke) ? dto.AliciUlke : "TR",
                 salesManagement = true,
                 financeManagement = true,
                 purchaseManagement = false,
                 potential = true,
                 contractor = true
             };
+
         }
         HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/v2.0/arps");
         req.Headers.Add("access-token", token);

@@ -521,6 +521,26 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EBelgeAPI.Controllers.LotTakipController",
+    "Method": "GetLotTakip",
+    "RelativePath": "api/reports/lot-takip",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EBelgeAPI.Controllers.LotTakipController",
+    "Method": "CacheSifirla",
+    "RelativePath": "api/reports/lot-takip/cache-sifirla",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EBelgeAPI.Controllers.SalesInvoiceController",
     "Method": "GetDetail",
     "RelativePath": "api/sales-invoice/detail/{uuid}",

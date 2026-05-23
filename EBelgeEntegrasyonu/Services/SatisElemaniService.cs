@@ -51,9 +51,10 @@ public class SatisElemaniService : ISatisElemaniService
         string baseUrl = logoSettings.ServerUrl.TrimEnd('/') + "/ERP-23/logo/restservices/rest";
         string firm = logoSettings.FirmNr.ToString();
         HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get,
-            $"{baseUrl}/v2.0/salespersonCard/list");
+           $"{baseUrl}/v2.0/salespersonCard/list?limit=100");
         req.Headers.Add("access-token", token.AccessToken);
         req.Headers.Add("firm", firm);
+  
         req.Headers.Add("lang", "TRTR");
         HttpResponseMessage resp = await _http.SendAsync(req);
         string? body = await resp.Content.ReadAsStringAsync();

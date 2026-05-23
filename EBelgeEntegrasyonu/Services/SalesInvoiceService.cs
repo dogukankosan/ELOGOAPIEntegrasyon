@@ -259,6 +259,17 @@ public class SalesInvoiceService : ISalesInvoiceService
             if (!string.IsNullOrEmpty(ad) || !string.IsNullOrEmpty(soyad))
                 aliciUnvan = $"{ad} {soyad}".Trim();
         }
+        var party = root.Element(Cac + "AccountingCustomerParty")?.Element(Cac + "Party");
+        // Telefon
+        string? telefon = party
+            ?.Element(Cac + "Contact")
+            ?.Element(Cbc + "Telephone")?.Value?.Trim();
+        // Adres
+        var adres = party?.Element(Cac + "PostalAddress");
+        string? ilce = adres?.Element(Cbc + "CitySubdivisionName")?.Value?.Trim();
+        string? il = adres?.Element(Cbc + "CityName")?.Value?.Trim();
+        string? ulkeKod = adres?.Element(Cac + "Country")
+                               ?.Element(Cbc + "IdentificationCode")?.Value?.Trim() ?? "TR";
         // ── Tutarlar ──
         decimal matrah = ParseDecimal(root
             .Element(Cac + "LegalMonetaryTotal")
@@ -350,6 +361,10 @@ public class SalesInvoiceService : ISalesInvoiceService
             AliciUnvan = aliciUnvan,
             FaturaNotu=faturaNotu,
             Matrah = matrah,
+            AliciTelefon = telefon,   // ← ekle
+            AliciIlce = ilce,      // ← ekle
+            AliciIl = il,        // ← ekle
+            AliciUlke = ulkeKod,   // ← ekle
             KdvTutar = kdv,
             GenelToplam = toplam,
             ParaBirimi = root.Element(Cbc + "DocumentCurrencyCode")?.Value ?? "TRY",

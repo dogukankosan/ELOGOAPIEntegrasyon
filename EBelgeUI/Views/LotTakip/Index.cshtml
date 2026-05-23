@@ -1,0 +1,717 @@
+﻿@{
+    ViewData["Title"] = "Seri No Takip Raporu";
+    ViewData["ActiveMenu"] = "LotTakip";
+}
+
+<style>
+    :root {
+        --primary: #1a73e8;
+        --primary-dark: #0d47a1;
+        --success: #188038;
+        --success-light: #e6f4ea;
+        --danger: #c62828;
+        --danger-light: #fce8e6;
+        --warning: #e65100;
+        --warning-light: #fff3e0;
+        --border: #e0e0e0;
+        --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        --radius: 12px;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .summary-card .s-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .summary-card .s-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .summary-card .s-lbl {
+            font-size: 0.73rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .summary-card .s-sub {
+            font-size: 0.68rem;
+            color: #999;
+        }
+
+        .summary-card.c-primary {
+            border-top: 4px solid var(--primary);
+        }
+
+        .summary-card.c-success {
+            border-top: 4px solid var(--success);
+        }
+
+        .summary-card.c-warning {
+            border-top: 4px solid var(--warning);
+        }
+
+        .summary-card.c-danger {
+            border-top: 4px solid var(--danger);
+        }
+
+        .summary-card.c-purple {
+            border-top: 4px solid #7c4dff;
+        }
+
+        .summary-card.c-teal {
+            border-top: 4px solid #00897b;
+        }
+
+    .filter-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        margin-bottom: 16px;
+    }
+
+        .filter-card .card-header {
+            background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+            border-bottom: 1px solid #dde3ff;
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 10px 18px;
+        }
+
+        .filter-card .card-body {
+            padding: 14px 18px;
+        }
+
+    .filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .filter-chip {
+        background: #e8f0fe;
+        color: var(--primary);
+        border: 1px solid #c5d8fd;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-chip.chip-success {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: #a8d5b5;
+        }
+
+            .filter-chip.chip-success:hover, .filter-chip.chip-success.active {
+                background: var(--success);
+                color: white;
+                border-color: var(--success);
+            }
+
+        .filter-chip.chip-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+            border-color: #ffd180;
+        }
+
+            .filter-chip.chip-warning:hover, .filter-chip.chip-warning.active {
+                background: var(--warning);
+                color: white;
+                border-color: var(--warning);
+            }
+
+        .filter-chip.chip-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: #f5b8b8;
+        }
+
+            .filter-chip.chip-danger:hover, .filter-chip.chip-danger.active {
+                background: var(--danger);
+                color: white;
+                border-color: var(--danger);
+            }
+
+    .table-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+        .table-card .card-header {
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 14px 20px;
+        }
+
+    table.dataTable thead th {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #555;
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+        white-space: nowrap;
+        padding: 10px 12px;
+    }
+
+    table.dataTable tbody td {
+        font-size: 0.8rem;
+        vertical-align: middle;
+        padding: 8px 12px;
+    }
+
+    table.dataTable tbody tr:hover td {
+        background: #f0f7ff !important;
+    }
+
+    table.dataTable tbody tr.row-satildi td {
+        background: #f0faf3 !important;
+    }
+
+    table.dataTable tbody tr.row-satildi:hover td {
+        background: #e0f5e8 !important;
+    }
+
+    .badge-stok {
+        background: #fff3e0;
+        color: #e65100;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .badge-satildi {
+        background: #e6f4ea;
+        color: #188038;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .badge-kar {
+        background: #e6f4ea;
+        color: #188038;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 700;
+    }
+
+    .badge-zarar {
+        background: #fce8e6;
+        color: #c62828;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 700;
+    }
+
+    .cikis-list {
+        font-size: 0.72rem;
+        color: #555;
+    }
+
+        .cikis-list span {
+            display: block;
+        }
+
+    #loadingOverlay {
+        text-align: center;
+        padding: 60px 0;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.82rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 3px 6px;
+        font-size: 0.82rem;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+        font-size: 0.78rem;
+        color: #888;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        font-size: 0.78rem !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: white !important;
+        }
+</style>
+
+<!-- ÖZET KARTLAR -->
+<div class="summary-grid" id="summaryGrid" style="display:none;">
+    <div class="summary-card c-primary">
+        <div class="s-icon">📦</div>
+        <div class="s-val" id="sToplam" style="color:var(--primary)">0</div>
+        <div class="s-lbl">Toplam Seri No</div>
+    </div>
+    <div class="summary-card c-warning">
+        <div class="s-icon">⏳</div>
+        <div class="s-val" id="sStokVar" style="color:var(--warning)">0</div>
+        <div class="s-lbl">Stokta Bekliyor</div>
+        <div class="s-sub" id="sStokTutar"></div>
+    </div>
+    <div class="summary-card c-success">
+        <div class="s-icon">✅</div>
+        <div class="s-val" id="sSatildi" style="color:var(--success)">0</div>
+        <div class="s-lbl">Satıldı</div>
+        <div class="s-sub" id="sSatildiTutar"></div>
+    </div>
+    <div class="summary-card c-teal">
+        <div class="s-icon">🛒</div>
+        <div class="s-val" id="sGirisTutar" style="color:#00897b;font-size:1.1rem;">0</div>
+        <div class="s-lbl">Toplam Alış Tutarı</div>
+    </div>
+    <div class="summary-card c-purple">
+        <div class="s-icon">💰</div>
+        <div class="s-val" id="sCikisTutar" style="color:#7c4dff;font-size:1.1rem;">0</div>
+        <div class="s-lbl">Toplam Satış Tutarı</div>
+    </div>
+    <div class="summary-card c-danger" id="sFarkCard">
+        <div class="s-icon">📊</div>
+        <div class="s-val" id="sFark" style="font-size:1.1rem;">0</div>
+        <div class="s-lbl">Satış - Alış Farkı</div>
+        <div class="s-sub">(Satılanlar)</div>
+    </div>
+</div>
+
+<!-- FİLTRELER -->
+<div class="filter-card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0" style="font-size:0.88rem;font-weight:700;">🔎 Filtreler &amp; Hızlı Görünüm</h5>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" type="button"
+                data-bs-toggle="collapse" data-bs-target="#filterCollapse" style="font-size:0.75rem;">
+            ▼
+        </button>
+    </div>
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Seri No / Malzeme Kodu / Adı</label>
+                    <input type="text" id="globalSearch" class="form-control form-control-sm" placeholder="Ara..." oninput="applyFilters()" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Giriş Fiş No</label>
+                    <input type="text" id="girisFisSearch" class="form-control form-control-sm" placeholder="Fiş no..." oninput="applyFilters()" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Giriş Cari</label>
+                    <input type="text" id="girisCariSearch" class="form-control form-control-sm" placeholder="Cari adı..." oninput="applyFilters()" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Çıkış Fiş No</label>
+                    <input type="text" id="cikisFisSearch" class="form-control form-control-sm" placeholder="Fiş no..." oninput="applyFilters()" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" style="font-size:0.75rem;font-weight:600;color:#555;">Çıkış Cari</label>
+                    <input type="text" id="cikisCariSearch" class="form-control form-control-sm" placeholder="Cari adı..." oninput="applyFilters()" />
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="clearFilters()" style="font-size:0.75rem;">Temizle</button>
+                </div>
+            </div>
+            <div class="filter-chips">
+                <span class="text-muted me-1" style="font-size:0.72rem;align-self:center;">Hızlı:</span>
+                <span class="filter-chip chip-success" onclick="quickFilter('satildi')" id="chip-satildi">✅ Satıldılar</span>
+                <span class="filter-chip chip-warning" onclick="quickFilter('stokta')" id="chip-stokta">⏳ Stokta</span>
+                <span class="filter-chip chip-danger" onclick="quickFilter('zarar')" id="chip-zarar">📉 Zararlı Satışlar</span>
+                <span class="filter-chip" onclick="quickFilter('hepsi')" id="chip-hepsi">📋 Tümü</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLO KARTI -->
+<div class="table-card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span style="font-size:1.1rem;">🔍</span>
+            <h5 class="mb-0" style="font-size:0.9rem;font-weight:700;">Seri No Hareketleri</h5>
+            <span id="kayitBadge" style="background:#e8f0fe;color:var(--primary);font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:700;display:none;"></span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-warning btn-sm" onclick="cacheSifirla()" style="font-size:0.78rem;">🔄 Cache Sıfırla</button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="exportExcel()" style="font-size:0.78rem;">📊 Excel İndir</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div id="loadingOverlay">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-muted" style="font-size:.85rem;">Veriler yükleniyor, lütfen bekleyin...</p>
+            <p class="text-muted" style="font-size:.75rem;">Logo ERP'den seri no hareketleri çekiliyor...</p>
+        </div>
+        <div id="errorBox" class="alert alert-danger m-3" style="display:none;"></div>
+        <div id="tableWrapper" style="display:none;">
+            <div class="table-responsive">
+                <table id="lotTable" class="display table table-hover mb-0" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Seri No</th>           
+                            <th>Malzeme Kodu</th>     
+                            <th>Malzeme Adı</th>     
+                            <th>Giriş Tarihi</th>      
+                            <th>Giriş Fiş No</th>   
+                            <th>Giriş Fiş Tipi</th>    
+                            <th>Giriş Cari</th>       
+                            <th>Giriş Ambar</th>       
+                            <th class="text-end">G.Miktar</th>  
+                            <th class="text-end">G.KDV%</th>    
+                            <th class="text-end">G.Matrah</th>  
+                            <th class="text-end">G.KDV</th>     
+                            <th class="text-end">G.Toplam</th>  
+                            <th>Çıkış Tarihi</th>      
+                            <th>Çıkış Fiş No</th>      
+                            <th>Çıkış Cari</th>        
+                            <th>Çıkış Ambar</th>       
+                            <th>Satış Elemanı</th>     
+                            <th class="text-end">Ç.Miktar</th>  
+                            <th class="text-end">Ç.KDV%</th>    
+                            <th class="text-end">Ç.Matrah</th>  
+                            <th class="text-end">Ç.KDV</th>     
+                            <th class="text-end">Ç.Toplam</th>  
+                            <th class="text-center">Durum</th>  
+                            <th class="text-end">Tutar Farkı</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lotTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="/thema/assets/js/plugin/datatables/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var dtTable    = null;
+        var allData    = [];
+        var activeChip = 'hepsi';
+
+        function fmt(val) {
+            if (val == null || val === '') return '-';
+            var n = parseFloat(val);
+            if (isNaN(n)) return val;
+            return n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function fmtTarih(val) {
+            if (!val) return '-';
+            var d = new Date(val);
+            return isNaN(d) ? val : d.toLocaleDateString('tr-TR');
+        }
+        function cokluSatir(val) {
+            if (!val) return '-';
+            return val.split(' | ').map(function(s) {
+                return '<span class="d-block">' + s.trim() + '</span>';
+            }).join('');
+        }
+        function fmtTL(val) {
+            var n = parseFloat(val) || 0;
+            return n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+        }
+
+        // ── VERİ YÜKLE ────────────────────────────────────────
+        function loadData() {
+            document.getElementById('loadingOverlay').style.display = 'block';
+            document.getElementById('tableWrapper').style.display   = 'none';
+            document.getElementById('errorBox').style.display       = 'none';
+            document.getElementById('summaryGrid').style.display    = 'none';
+
+            fetch('/LotTakip/GetData')
+            .then(function(r) { return r.json(); })
+            .then(function(resp) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                if (!resp.success) {
+                    document.getElementById('errorBox').textContent = resp.message || 'Veri alinamadi.';
+                    document.getElementById('errorBox').style.display = 'block';
+                    return;
+                }
+                allData = resp.data || [];
+                renderTable(allData);
+                renderSummary(allData);
+            })
+            .catch(function(e) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('errorBox').textContent = 'Baglanti hatasi: ' + e.message;
+                document.getElementById('errorBox').style.display = 'block';
+            });
+        }
+
+        // ── ÖZET KARTLAR ──────────────────────────────────────
+        function renderSummary(data) {
+            var stokVar     = data.filter(function(r) { return (parseFloat(r.kalanStok) || 0) > 0; });
+            var satildi     = data.filter(function(r) { return (parseFloat(r.kalanStok) || 0) <= 0 && r.cikisFisNolari; });
+            var stokTutar   = stokVar.reduce(function(a, r) { return a + (parseFloat(r.girisToplamTutar) || 0); }, 0);
+            var girisToplam = data.reduce(function(a, r)    { return a + (parseFloat(r.girisToplamTutar) || 0); }, 0);
+            var cikisToplam = satildi.reduce(function(a, r) { return a + (parseFloat(r.toplamCikisTutar) || 0); }, 0);
+            var satisFark   = satildi.reduce(function(a, r) { return a + (parseFloat(r.tutarFarki) || 0); }, 0);
+
+            document.getElementById('sToplam').textContent      = data.length.toLocaleString('tr-TR');
+            document.getElementById('sStokVar').textContent     = stokVar.length.toLocaleString('tr-TR');
+            document.getElementById('sStokTutar').textContent   = fmtTL(stokTutar) + ' bekliyor';
+            document.getElementById('sSatildi').textContent     = satildi.length.toLocaleString('tr-TR');
+            document.getElementById('sSatildiTutar').textContent = satildi.length + ' adet satış';
+            document.getElementById('sGirisTutar').textContent  = fmtTL(girisToplam);
+            document.getElementById('sCikisTutar').textContent  = fmtTL(cikisToplam);
+
+            var farkEl = document.getElementById('sFark');
+            farkEl.textContent = fmtTL(satisFark);
+            farkEl.style.color = satisFark >= 0 ? '#188038' : '#c62828';
+            document.getElementById('sFarkCard').style.borderTopColor = satisFark >= 0 ? '#188038' : '#c62828';
+            document.getElementById('summaryGrid').style.display = 'grid';
+        }
+
+        // ── TABLO RENDER ──────────────────────────────────────
+        function renderTable(data) {
+            var tbody = document.getElementById('lotTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(function(r) {
+                var kalan   = parseFloat(r.kalanStok)  || 0;
+                var tfark   = parseFloat(r.tutarFarki) || 0;
+                var satildi = kalan <= 0 && r.cikisFisNolari;
+
+                var stokBadge = satildi
+                    ? '<span class="badge-satildi">✅ Satıldı</span>'
+                    : '<span class="badge-stok">⏳ Stokta</span>';
+
+                var farkBadge = tfark > 0
+                    ? '<span class="badge-kar">+' + fmt(tfark) + '</span>'
+                    : tfark < 0
+                        ? '<span class="badge-zarar">' + fmt(tfark) + '</span>'
+                        : '<span style="color:#888;font-size:0.75rem;">-</span>';
+
+                var tr = document.createElement('tr');
+                if (satildi) tr.classList.add('row-satildi');
+
+                tr.innerHTML =
+                    // 0 Seri No
+                    '<td><small style="font-family:monospace;font-weight:700;">' + (r.seriNo || '-') + '</small></td>' +
+                    // 1 Malzeme Kodu
+                    '<td><small style="font-family:monospace;">' + (r.malzemeKodu || '-') + '</small></td>' +
+                    // 2 Malzeme Adı
+                    '<td style="max-width:200px;"><small class="d-block text-truncate" title="' + (r.malzemeAdi || '') + '">' + (r.malzemeAdi || '-') + '</small></td>' +
+                    // 3 Giriş Tarihi
+                    '<td data-order="' + (r.girisTarihi || '') + '"><small>' + fmtTarih(r.girisTarihi) + '</small></td>' +
+                    // 4 Giriş Fiş No
+                    '<td><small style="font-family:monospace;">' + (r.girisFisNo || '-') + '</small></td>' +
+                    // 5 Giriş Fiş Tipi
+                    '<td><small>' + (r.girisFisTipi || '-') + '</small></td>' +
+                    // 6 Giriş Cari
+                    '<td style="max-width:140px;"><small class="d-block text-truncate" title="' + (r.girisCariUnvani || '') + '">' + (r.girisCariUnvani || '-') + '</small></td>' +
+                    // 7 Giriş Ambar
+                    '<td><small>' + (r.girisAmbar || '-') + '</small></td>' +
+                    // 8 G.Miktar
+                    '<td class="text-end"><small>' + (r.girisMiktar != null ? r.girisMiktar : '1') + '</small></td>' +
+                    // 9 G.KDV%
+                    '<td class="text-end"><small>%' + fmt(r.girisKdvOrani) + '</small></td>' +
+                    // 10 G.Matrah
+                    '<td class="text-end"><small>' + fmt(r.girisKdvMatrahi) + '</small></td>' +
+                    // 11 G.KDV
+                    '<td class="text-end"><small>' + fmt(r.girisKdvTutari) + '</small></td>' +
+                    // 12 G.Toplam
+                    '<td class="text-end"><small class="fw-bold">' + fmt(r.girisToplamTutar) + '</small></td>' +
+                    // 13 Çıkış Tarihi
+                    '<td><div class="cikis-list">' + cokluSatir(r.cikisTarihleri) + '</div></td>' +
+                    // 14 Çıkış Fiş No
+                    '<td><div class="cikis-list" style="font-family:monospace;">' + cokluSatir(r.cikisFisNolari) + '</div></td>' +
+                    // 15 Çıkış Cari
+                    '<td style="max-width:140px;"><div class="cikis-list">' + cokluSatir(r.cikisCariUnvanlari) + '</div></td>' +
+                    // 16 Çıkış Ambar
+                    '<td><div class="cikis-list">' + cokluSatir(r.cikisAmbar) + '</div></td>' +
+                    // 17 Satış Elemanı
+                    '<td><div class="cikis-list">' + cokluSatir(r.cikisSatisElemani) + '</div></td>' +
+                    // 18 Ç.Miktar
+                    '<td class="text-end"><div class="cikis-list text-end">' + cokluSatir(r.cikisMiktarlari) + '</div></td>' +
+                    // 19 Ç.KDV%
+                    '<td class="text-end"><div class="cikis-list text-end">' + cokluSatir(r.cikisKdvOranlari ? r.cikisKdvOranlari.split(' | ').map(function(v){ return '%' + fmt(v); }).join(' | ') : null) + '</div></td>' +
+                    // 20 Ç.Matrah
+                    '<td class="text-end"><div class="cikis-list text-end">' + cokluSatir(r.cikisKdvMatrahlari) + '</div></td>' +
+                    // 21 Ç.KDV
+                    '<td class="text-end"><div class="cikis-list text-end">' + cokluSatir(r.cikisKdvTutarlari) + '</div></td>' +
+                    // 22 Ç.Toplam
+                    '<td class="text-end"><div class="cikis-list text-end fw-bold">' + cokluSatir(r.cikisToplamTutarlari) + '</div></td>' +
+                    // 23 Durum
+                    '<td class="text-center">' + stokBadge + '</td>' +
+                    // 24 Tutar Farkı
+                    '<td class="text-end">' + farkBadge + '</td>';
+
+                tbody.appendChild(tr);
+            });
+
+            var badge = document.getElementById('kayitBadge');
+            badge.textContent = data.length + ' kayıt';
+            badge.style.display = 'inline-block';
+
+            document.getElementById('tableWrapper').style.display = 'block';
+
+            if (dtTable) { dtTable.destroy(); dtTable = null; }
+
+            dtTable = $('#lotTable').DataTable({
+                pageLength: 25,
+                order: [[3, 'desc']],
+                language: { url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json' },
+                columnDefs: [
+                    // text-end: G.Miktar(8), G.KDV%(9), G.Matrah(10), G.KDV(11), G.Toplam(12),
+                    //           Ç.Miktar(18), Ç.KDV%(19), Ç.Matrah(20), Ç.KDV(21), Ç.Toplam(22), TutarFarkı(24)
+                    { className: 'text-end',    targets: [8, 9, 10, 11, 12, 18, 19, 20, 21, 22, 24] },
+                    { className: 'text-center', targets: [23] },
+                    // orderable:false: çıkış kolonları (çoklu değer)
+                    { orderable: false, targets: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22] }
+                ],
+                buttons: [{
+                    extend: 'excel',
+                    text: 'Excel',
+                    title: 'Seri No Takip Raporu',
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            body: function(data, row, col, node) {
+                                return data ? data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim() : '';
+                            }
+                        }
+                    }
+                }]
+            });
+
+            $.fn.dataTable.ext.search = [];
+            registerCustomSearch();
+        }
+
+        // ── CUSTOM SEARCH ─────────────────────────────────────
+        function registerCustomSearch() {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                var row = dtTable ? dtTable.row(dataIndex).node() : null;
+                if (!row) return true;
+                var r = allData[dtTable.row(dataIndex).index()];
+                if (!r) return true;
+
+                var kalan   = parseFloat(r.kalanStok)  || 0;
+                var tfark   = parseFloat(r.tutarFarki) || 0;
+                var satildi = kalan <= 0 && r.cikisFisNolari;
+
+                if (activeChip === 'satildi' && !satildi)              return false;
+                if (activeChip === 'stokta'  && satildi)               return false;
+                if (activeChip === 'zarar'   && !(satildi && tfark < 0)) return false;
+
+                var gs = (document.getElementById('globalSearch').value   || '').toLowerCase();
+                var gf = (document.getElementById('girisFisSearch').value  || '').toLowerCase();
+                var gc = (document.getElementById('girisCariSearch').value || '').toLowerCase();
+                var cf = (document.getElementById('cikisFisSearch').value  || '').toLowerCase();
+                var cc = (document.getElementById('cikisCariSearch').value || '').toLowerCase();
+
+                if (gs && !((r.seriNo||'').toLowerCase().includes(gs) ||
+                            (r.malzemeKodu||'').toLowerCase().includes(gs) ||
+                            (r.malzemeAdi||'').toLowerCase().includes(gs))) return false;
+                if (gf && !(r.girisFisNo||'').toLowerCase().includes(gf))         return false;
+                if (gc && !(r.girisCariUnvani||'').toLowerCase().includes(gc))    return false;
+                if (cf && !(r.cikisFisNolari||'').toLowerCase().includes(cf))     return false;
+                if (cc && !(r.cikisCariUnvanlari||'').toLowerCase().includes(cc)) return false;
+
+                return true;
+            });
+        }
+
+        function applyFilters() { if (dtTable) dtTable.draw(); }
+
+        function clearFilters() {
+            document.getElementById('globalSearch').value    = '';
+            document.getElementById('girisFisSearch').value  = '';
+            document.getElementById('girisCariSearch').value = '';
+            document.getElementById('cikisFisSearch').value  = '';
+            document.getElementById('cikisCariSearch').value = '';
+            quickFilter('hepsi');
+        }
+
+        function quickFilter(type) {
+            activeChip = type;
+            document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+            var el = document.getElementById('chip-' + type);
+            if (el) el.classList.add('active');
+            applyFilters();
+        }
+
+        function exportExcel() { if (dtTable) dtTable.button(0).trigger(); }
+
+        function cacheSifirla() {
+            Swal.fire({
+                title: 'Cache Sıfırlansın mı?',
+                html: 'Logo ERP\'den güncel veriler çekilecek.<br><small class="text-muted">Bu işlem birkaç dakika sürebilir.</small>',
+                icon: 'question', showCancelButton: true,
+                confirmButtonColor: '#e65100', cancelButtonColor: '#757575',
+                confirmButtonText: 'Evet, Sıfırla', cancelButtonText: 'İptal', reverseButtons: true
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'Sıfırlanıyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                fetch('/LotTakip/CacheSifirla', { method: 'POST' })
+                .then(r => r.json())
+                .then(function(data) {
+                    if (data.success) {
+                        Swal.fire({ title: 'Tamam', text: 'Cache sıfırlandı. Yeniden yükleniyor...', icon: 'success', timer: 1500, showConfirmButton: false })
+                        .then(function() { loadData(); });
+                    } else {
+                        Swal.fire('Hata', data.message || 'Sıfırlanamadı.', 'error');
+                    }
+                })
+                .catch(function() { Swal.fire('Hata', 'Bağlantı hatası.', 'error'); });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() { loadData(); });
+    </script>
+}

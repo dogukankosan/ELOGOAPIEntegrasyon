@@ -6,7 +6,11 @@ using EBelgeAPI.Models.Requests;
 using EBelgeAPI.Models.Responses;
 
 namespace EBelgeAPI.Services.Interfaces;
-
+public interface ILotTakipService
+{
+    Task<(bool Success, List<LotTakipDto>? Data, string? Error)> GetLotTakipRaporuAsync();
+    Task CacheSifirlaAsync();
+}
 public interface IAuthService
 {
     Task<(bool Success, LoginResponse? Response, string? Error)> LoginAsync(LoginRequest request);
