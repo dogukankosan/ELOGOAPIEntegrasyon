@@ -1,3 +1,4 @@
+
 # 📄 EBelge Entegrasyon
 
 ![License](https://img.shields.io/github/license/dogukankosan/EBelgeEntegrasyonu)
@@ -25,6 +26,7 @@
 - 📝 API log sistemi (INFO / WARNING / ERROR)
 - ⚙️ Admin panel — e-Logo ve Logo ERP ayarları yönetimi
 - 🪟 Windows Service desteği
+- 🔍 Lot/Seri No takip raporu (Logo ERP SQL sorgusu, sayfalı çekim, 30 dk önbellek)
 
 ---
 
@@ -33,15 +35,21 @@
 ```
 EBelgeEntegrasyonu/
 ├── EBelgeAPI/                  # ASP.NET Core Web API
-│   ├── Controllers/            # API endpoint'leri
+│   ├── Controllers/
+│   │   ├── ...                 # Mevcut controller'lar
+│   │   └── LotTakipController.cs   # Lot/Seri No takip raporu endpoint'leri
 │   ├── Data/                   # Repository'ler ve arayüzler
 │   ├── Middleware/             # ApiKey, JWT revocation, exception middleware
 │   ├── Models/                 # Entity, DTO, Request, Response modelleri
-│   ├── Services/               # İş mantığı servisleri
+│   ├── Services/
+│   │   ├── ...                 # Mevcut servisler
+│   │   └── LotTakipService.cs  # Sayfalı SQL sorgusu, cache yönetimi, DTO mapping
 │   └── Program.cs              # Uygulama başlangıç noktası
 │
 └── EBelgeUI/                   # ASP.NET Core MVC (Razor Views)
-    ├── Controllers/            # UI controller'ları
+    ├── Controllers/
+    │   ├── ...                 # Mevcut controller'lar
+    │   └── LotTakipController.cs   # Lot takip UI controller (API proxy + cache sıfırlama)
     ├── Filters/                # Session auth filter
     ├── Middleware/             # Exception middleware
     ├── Models/                 # ViewModel'ler
@@ -148,7 +156,8 @@ sc start EBelgeUI
 5. Tek fatura veya toplu transfer ile Logo ERP'ye aktar.
 6. **Dashboard** üzerinden transfer istatistiklerini takip et.
 7. **Kara Liste** ile belirli carileri filtreden çıkar.
-8. **Hata Logları** üzerinden sistem hatalarını incele.
+8. **Lot Takip** menüsünden seri/lot numarası bazlı giriş-çıkış hareketlerini, stok durumunu ve tutar bilgilerini görüntüle; gerektiğinde önbelleği sıfırla.
+9. **Hata Logları** üzerinden sistem hatalarını incele.
 
 ---
 
@@ -163,6 +172,8 @@ sc start EBelgeUI
 | Transfer | `POST /api/sales-invoice/transfer/toplu` | Toplu transfer |
 | Ambar | `GET /api/ambar` | Ambar listesi |
 | Dashboard | `GET /api/dashboard/stats` | İstatistikler |
+| Lot Takip | `GET /api/reports/lot-takip` | Lot/Seri No takip raporu (cacheli) |
+| Lot Takip | `POST /api/reports/lot-takip/cache-sifirla` | Önbelleği sıfırla |
 | Ayarlar | `GET /api/settings` | Sistem ayarları (Admin) |
 
 ---
