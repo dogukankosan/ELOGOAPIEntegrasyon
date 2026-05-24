@@ -5,7 +5,7 @@
 ![Issues](https://img.shields.io/github/issues/dogukankosan/EBelgeEntegrasyonu)
 ![Last Commit](https://img.shields.io/github/last-commit/dogukankosan/EBelgeEntegrasyonu)
 
-<img width="1600" height="779" alt="76bba154-741a-4931-84e8-59d2b6963349" src="https://github.com/user-attachments/assets/e9a322fb-3107-4e5c-9c45-dbdc47031542" />
+<img width="1600" height="739" alt="9ab4e47a-c6d5-4752-8a1d-741a701b1743" src="https://github.com/user-attachments/assets/eb75e6dc-cb6e-45ff-b610-f7bacf2dc954" />
 
 
 > **EBelge Entegrasyon**, e-Logo üzerinden kesilen e-Arşiv ve e-Fatura belgelerini otomatik olarak Logo Bulut ERP'ye aktaran, ASP.NET Core tabanlı bir ara katman entegrasyon sistemidir.
